@@ -35,8 +35,8 @@ import (
 	"time"
 
 	base "github.com/Cray-HPE/hms-base"
-	reservation "github.com/Cray-HPE/hms-smd/v2/pkg/service-reservations"
-	"github.com/Cray-HPE/hms-smd/v2/pkg/sm"
+	reservation "github.com/OpenCHAMI/smd/v2/pkg/service-reservations"
+	"github.com/OpenCHAMI/smd/v2/pkg/sm"
 	"github.com/sirupsen/logrus"
 )
 

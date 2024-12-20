@@ -51,19 +51,19 @@ ENV CRAY_VAULT_JWT_FILE "/go/configs/token"
 
 RUN go env -w GO111MODULE=auto
 
-COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-power-control/cmd
+COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
 COPY configs configs
 COPY scripts scripts
-COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-power-control/vendor
-COPY internal $GOPATH/src/github.com/Cray-HPE/hms-power-control/internal
-COPY .version $GOPATH/src/github.com/Cray-HPE/hms-power-control/.version
+COPY vendor $GOPATH/src/github.com/OpenCHAMI/power-control/v2/vendor
+COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
+COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
 
 CMD set -ex \
     && ./scripts/wait-for-discovery.sh \
     && go version \
-    && go test -cover -v -tags musl -o power-control github.com/Cray-HPE/hms-power-control/internal/domain \
-    && go test -cover -v -tags musl -o power-control github.com/Cray-HPE/hms-power-control/internal/api \
-    && go test -cover -v -tags musl -o power-control github.com/Cray-HPE/hms-power-control/internal/model \
-    && go test -cover -v -tags musl -o power-control github.com/Cray-HPE/hms-power-control/internal/storage \
-    && go test -cover -v -tags musl -o power-control github.com/Cray-HPE/hms-power-control/internal/hsm
+    && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/domain \
+    && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/api \
+    && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/model \
+    && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/storage \
+    && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/hsm
 

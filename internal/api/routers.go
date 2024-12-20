@@ -23,7 +23,7 @@
 package api
 
 import (
-	"github.com/Cray-HPE/hms-power-control/internal/logger"
+	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"net/http"
 	"strings"
 	"time"

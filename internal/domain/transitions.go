@@ -33,9 +33,9 @@ import (
 	"time"
 
 	base "github.com/Cray-HPE/hms-base"
-	"github.com/Cray-HPE/hms-power-control/internal/hsm"
-	"github.com/Cray-HPE/hms-power-control/internal/logger"
-	"github.com/Cray-HPE/hms-power-control/internal/model"
+	"github.com/OpenCHAMI/power-control/v2/internal/hsm"
+	"github.com/OpenCHAMI/power-control/v2/internal/logger"
+	"github.com/OpenCHAMI/power-control/v2/internal/model"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )

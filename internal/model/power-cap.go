@@ -25,7 +25,7 @@ package model
 import (
 	"time"
 
-	"github.com/Cray-HPE/hms-power-control/internal/hsm"
+	"github.com/OpenCHAMI/power-control/v2/internal/hsm"
 	"github.com/google/uuid"
 )
 

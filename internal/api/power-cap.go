@@ -28,9 +28,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Cray-HPE/hms-power-control/internal/domain"
-	"github.com/Cray-HPE/hms-power-control/internal/logger"
-	"github.com/Cray-HPE/hms-power-control/internal/model"
+	"github.com/OpenCHAMI/power-control/v2/internal/domain"
+	"github.com/OpenCHAMI/power-control/v2/internal/logger"
+	"github.com/OpenCHAMI/power-control/v2/internal/model"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )

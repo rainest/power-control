@@ -33,13 +33,13 @@ import (
 	"time"
 
 	base "github.com/Cray-HPE/hms-base"
-	"github.com/Cray-HPE/hms-power-control/internal/credstore"
-	pcshsm "github.com/Cray-HPE/hms-power-control/internal/hsm"
-	pcsmodel "github.com/Cray-HPE/hms-power-control/internal/model"
-	"github.com/Cray-HPE/hms-power-control/internal/storage"
-	rf "github.com/Cray-HPE/hms-smd/v2/pkg/redfish"
+	"github.com/OpenCHAMI/power-control/v2/internal/credstore"
+	pcshsm "github.com/OpenCHAMI/power-control/v2/internal/hsm"
+	pcsmodel "github.com/OpenCHAMI/power-control/v2/internal/model"
+	"github.com/OpenCHAMI/power-control/v2/internal/storage"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/v3/pkg/trs_http_api"
 	"github.com/Cray-HPE/hms-xname/xnametypes"
+	rf "github.com/OpenCHAMI/smd/v2/pkg/rf"
 
 	"github.com/sirupsen/logrus"
 )

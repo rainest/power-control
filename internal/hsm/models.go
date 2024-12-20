@@ -23,10 +23,10 @@
 package hsm
 
 import (
-	"github.com/sirupsen/logrus"
+	base "github.com/Cray-HPE/hms-base"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
-	"github.com/Cray-HPE/hms-base"
-	reservation "github.com/Cray-HPE/hms-smd/v2/pkg/service-reservations"
+	reservation "github.com/OpenCHAMI/smd/v2/pkg/service-reservations"
+	"github.com/sirupsen/logrus"
 )
 
 type HSM_GLOBALS struct {

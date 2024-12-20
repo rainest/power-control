@@ -35,15 +35,15 @@ FROM build-base AS base
 RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-power-control/cmd
-COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-power-control/vendor
-COPY internal $GOPATH/src/github.com/Cray-HPE/hms-power-control/internal
-COPY .version $GOPATH/src/github.com/Cray-HPE/hms-power-control/.version
+COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
+COPY vendor $GOPATH/src/github.com/OpenCHAMI/power-control/v2/vendor
+COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
+COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
 
 ### Build Stage ###
 FROM base AS builder
 
-RUN set -ex && go build -v -tags musl -o /usr/local/bin/hms-power-control github.com/Cray-HPE/hms-power-control/cmd/hms-power-control
+RUN set -ex && go build -v -tags musl -o /usr/local/bin/hms-power-control github.com/OpenCHAMI/power-control/v2/cmd/hms-power-control
 
 ### Final Stage ###
 

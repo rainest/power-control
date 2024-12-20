@@ -31,7 +31,7 @@ import (
 	"time"
 
 	hmetcd "github.com/Cray-HPE/hms-hmetcd"
-	"github.com/Cray-HPE/hms-power-control/internal/model"
+	"github.com/OpenCHAMI/power-control/v2/internal/model"
 	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
