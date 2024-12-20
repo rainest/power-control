@@ -22,10 +22,10 @@
 
 # This file only exists as a means to run tests in an automated fashion.
 
-FROM artifactory.algol60.net/docker.io/library/alpine:3 AS build-base
+FROM docker.io/library/alpine:3 AS build-base
 
 ENV LOG_LEVEL TRACE
-ENV API_URL "http://cray-power-control"
+ENV API_URL "http://power-control"
 ENV API_SERVER_PORT ":28007"
 ENV API_BASE_PATH ""
 ENV VERIFY_SSL False
