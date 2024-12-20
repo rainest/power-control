@@ -327,6 +327,7 @@ func doTransition(transitionID uuid.UUID) {
 	}
 	if abortSignaled {
 		doAbort(tr, xnameMap)
+		return
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -549,6 +550,7 @@ func doTransition(transitionID uuid.UUID) {
 	}
 	if abortSignaled {
 		doAbort(tr, xnameMap)
+		return
 	}
 
 	// Sort components into groups so they can follow a proper power sequence
