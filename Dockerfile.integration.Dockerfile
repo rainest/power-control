@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building hms-power-control.
+# Dockerfile for building power-control.
 
 # Build base just has the packages installed we need.
 FROM docker.io/library/golang:1.23-alpine AS build-base
@@ -43,7 +43,7 @@ COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
 ### Build Stage ###
 FROM base AS builder
 
-RUN set -ex && go build -v -tags musl -o /usr/local/bin/hms-power-control github.com/OpenCHAMI/power-control/v2/cmd/hms-power-control
+RUN set -ex && go build -v -tags musl -o /usr/local/bin/power-control github.com/OpenCHAMI/power-control/v2/cmd/power-control
 
 ### Final Stage ###
 
@@ -56,8 +56,8 @@ RUN set -ex \
     && apk -U upgrade \
     && apk add curl jq
 
-# Get the hms-power-control from the builder stage.
-COPY --from=builder /usr/local/bin/hms-power-control /usr/local/bin/.
+# Get the power-control from the builder stage.
+COPY --from=builder /usr/local/bin/power-control /usr/local/bin/.
 COPY configs configs
 COPY .version /
 
@@ -85,4 +85,4 @@ ENV CRAY_VAULT_JWT_FILE "/configs/token"
 #nobody 65534:65534
 USER 65534:65534
 
-CMD ["sh", "-c", "hms-power-control"]
+CMD ["sh", "-c", "power-control"]

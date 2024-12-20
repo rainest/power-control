@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building hms-power-control.
+# Dockerfile for building power-control.
 
 # Build base just has the packages installed we need.
 FROM chainguard/wolfi-base:latest
@@ -49,13 +49,13 @@ ENV API_URL "http://cray-power"
 ENV API_SERVER_PORT ":28007"
 ENV API_BASE_PATH "/v1"
 
-COPY hms-power-control /usr/local/bin/
+COPY power-control /usr/local/bin/
 COPY configs configs
 COPY .version /
 
 #nobody 65534:65534
 USER 65534:65534
 
-CMD /usr/local/bin/hms-power-control
+CMD /usr/local/bin/power-control
 
 ENTRYPOINT ["/sbin/tini", "--"]
