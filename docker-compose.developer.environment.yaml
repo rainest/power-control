@@ -6,8 +6,9 @@ networks:
   pcs:
 services:
   etcd:
-    image: artifactory.algol60.net/quay.io/coreos/etcd:v3.4.7
+    image: quay.io/coreos/etcd:v3.5.17
     environment:
+      - ETCD_UNSUPPORTED_ARCH=arm64
       - ALLOW_NONE_AUTHENTICATION=yes
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
       - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
@@ -18,7 +19,7 @@ services:
       - pcs
   vault:
     hostname: vault
-    image: artifactory.algol60.net/docker.io/library/vault:1.5.5
+    image: image: docker.io/library/vault:1.5.5
     environment:
       - VAULT_DEV_ROOT_TOKEN_ID=hms
       - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
@@ -30,7 +31,9 @@ services:
     networks:
       - pcs
   vault-kv-enabler:
-    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.13.4
+    build:
+      context: .
+      dockerfile: vault-kv-enabler.dockerfile
     environment:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=hms
@@ -39,32 +42,41 @@ services:
       - vault
     networks:
       - pcs
-  hmsds-postgres:
-    hostname: hmsds-postgres
-    image: artifactory.algol60.net/docker.io/library/postgres:11-alpine
+  postgres:
+    hostname: postgres
+    image: docker.io/library/postgres:11-alpine
     environment:
-      - POSTGRES_PASSWORD=hmsdsuser
-      - POSTGRES_USER=hmsdsuser
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_DB=hmsds
     ports:
       - "5432:5432"
     networks:
       - pcs
-  cray-smd-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.58.0
+  smd-init:
+    image: ghcr.io/openchami/smd:2.17
     environment:
-      - SMD_DBHOST=hmsds-postgres
+      - SMD_DBHOST=postgres
       - SMD_DBPORT=5432
+      - SMD_DBNAME=hmsds
+      - SMD_DBUSER=${POSTGRES_USER:-postgres}
+      - SMD_DBPASS=${POSTGRES_PASSWORD:-postgres}
+      - SMD_DBOPTS=sslmode=disable
     depends_on:
-      - hmsds-postgres
+      - postgres
     networks:
       - pcs
-    command: /entrypoint.sh smd-init
-  cray-smd:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.58.0
+    command: /smd-init
+  smd:
+    image: ghcr.io/openchami/smd:2.17
     environment:
-      - POSTGRES_HOST=hmsds-postgres
-      - POSTGRES_PORT=5432
+      - SMD_DBHOST=postgres
+      - SMD_DBPORT=5432
+      - SMD_DBNAME=hmsds
+      - SMD_DBUSER=${POSTGRES_USER:-postgres}
+      - SMD_DBPASS=${POSTGRES_PASSWORD:-postgres}
+      - SMD_DBOPTS=sslmode=disable
+      - SMD_JWKS_URL=
       - RF_MSG_HOST=kafka:9092:cray-dmtf-resource-event
       - CRAY_VAULT_AUTH_PATH=auth/token/create
       - CRAY_VAULT_ROLE_FILE=configs/namespace
@@ -76,16 +88,19 @@ services:
       - SMD_RVAULT=true
       - SMD_SLS_HOST=
       - SMD_HBTD_HOST=
-    hostname: cray-smd
+    volumes:
+      - ./configs/namespace:/configs/namespace
+      - ./configs/token:/configs/token
+    hostname: smd
     depends_on:
-      - cray-smd-init
+      - smd-init
       - vault
     ports:
       - "27779:27779"
     networks:
       - pcs
   zookeeper:
-    image: artifactory.algol60.net/docker.io/confluentinc/cp-zookeeper:6.1.1
+    image: confluentinc/cp-zookeeper:7.8.0
     hostname: zookeeper
     ports:
       - "2181:2181"
@@ -95,7 +110,7 @@ services:
     networks:
       - pcs
   kafka:
-    image: artifactory.algol60.net/docker.io/confluentinc/cp-kafka:6.1.1
+    image: confluentinc/cp-kafka:7.8.0
     hostname: kafka
     depends_on:
       - zookeeper
@@ -111,10 +126,10 @@ services:
     networks:
       - pcs
   cray-hms-hmcollector:
-    image: artifactory.algol60.net/csm-docker/stable/hms-hmcollector:2.12.4
+    image: hms-hmcollector # For now we use a local image
     environment:
       - LOG_LEVEL=TRACE
-      - SM_URL=http://cray-smd:27779
+      - SM_URL=http://smd:27779
       - POLLING_ENABLED=false
       - RF_SUBSCRIBE_ENABLED=false
       - REST_PORT=80
