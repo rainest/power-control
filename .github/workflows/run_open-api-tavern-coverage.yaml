@@ -4,11 +4,40 @@ on:
   - pull_request # Perform a build after merging with the target branch
   - workflow_dispatch
 jobs:
-  build_and_release:
-    uses: Cray-HPE/open-api-tavern-coverage/.github/workflows/run_open-api-tavern-coverage.yaml@v2
-    #the v1 tag exists now
-    with:
-      open-api-file: "api/swagger.yaml"
-      tavern-file-dir: "test/ct/api"
-      api-target-urls: "{pcs_base_url}"
-    secrets: inherit
+  run_coverage:
+
+    name: Run Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Check out the coverage tool repo
+        uses: actions/checkout@v4
+        with:
+          repository: Cray-HPE/open-api-tavern-coverage
+          path: open-api-tavern-coverage
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install coverage tool
+        run: pip install -r open-api-tavern-coverage/requirements.txt
+
+      - name: Run Open-API Tavern Coverage Tool
+        run:  python open-api-tavern-coverage/coverage-tool.py
+        env:
+          TAVERN_FILE_DIR: test/ct/api
+          OPEN_API_FILE: api/swagger.yaml
+          API_TARGET_URLS: "{pcs_base_url}"
+      - name: Render job summary
+        id: template
+        uses: chuhlomin/render-template@v1.6
+        with:
+          template: ./.github/workflows/coverage_summary.md.tpl
+          vars_path: ./data/output/job_summary_template_values.yaml
+
+      - name: Set job summary
+        run: echo '${{ steps.template.outputs.result }}' >> $GITHUB_STEP_SUMMARY
