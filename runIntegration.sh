@@ -43,7 +43,7 @@ function cleanup() {
 
 echo "Starting containers..."
 docker compose build
-docker compose up  -d cray-power-control #this will stand up everythin except for the integration test container
+docker compose up  -d power-control #this will stand up everythin except for the integration test container
 docker compose up --exit-code-from integration-tests integration-tests
 
 test_result=$?

@@ -46,11 +46,11 @@ function cleanup() {
 # Get the base containers running
 echo "Starting containers..."
 docker compose build --no-cache
-docker compose up -d cray-power-control
+docker compose up -d power-control
 
 sleep 15
 
-docker compose logs cray-power-control
+docker compose logs power-control
 
 # execute the CT smoke tests
 if ! docker compose up --no-recreate --exit-code-from smoke smoke; then

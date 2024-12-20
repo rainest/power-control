@@ -29,7 +29,7 @@ discovered=0
 ncomp=0
 
 if [ -z $SMS_SERVER ]; then
-	SMURL="http://cray-smd:27779"
+	SMURL="http://smd:27779"
 fi
 
 echo "========================================================================"

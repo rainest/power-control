@@ -1,8 +1,17 @@
 name: Run Integration Tests
-on: [push, pull_request, workflow_dispatch]
+on:
+  - push
+  - pull_request
+  - workflow_dispatch
 jobs:
-  run_integration_test:
-    uses: Cray-HPE/hms-build-image-workflows/.github/workflows/run_integration_test.yaml@v2
-    with:
-      runs-on: ubuntu-latest
-    secrets: inherit
+  run_integration_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Install docker compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose make
+      - name: Run integration tests
+        run: make integration
