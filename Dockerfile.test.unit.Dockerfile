@@ -22,7 +22,7 @@
 
 # This file only exists as a means to run tests in an automated fashion.
 
-FROM artifactory.algol60.net/docker.io/library/golang:1.23-alpine
+FROM docker.io/library/golang:1.23-alpine
 
 RUN set -ex \
     && apk -U upgrade \
@@ -31,7 +31,7 @@ RUN set -ex \
     && apk add curl \
     && apk add jq
 
-ENV SMS_SERVER "http://cray-smd:27779"
+ENV SMS_SERVER "http://smd:27779"
 ENV LOG_LEVEL "INFO"
 ENV SERVICE_RESERVATION_VERBOSITY "ERROR"
 ENV TRS_IMPLEMENTATION "LOCAL"
