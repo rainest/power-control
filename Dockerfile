@@ -23,52 +23,13 @@
 # Dockerfile for building hms-power-control.
 
 # Build base just has the packages installed we need.
-FROM artifactory.algol60.net/docker.io/library/golang:1.23-alpine AS build-base
+FROM chainguard/wolfi-base:latest
 
 RUN set -ex \
-    && apk -U upgrade \
-    && apk add build-base
-
-# Base copies in the files we need to test/build.
-FROM build-base AS base
-
-RUN go env -w GO111MODULE=auto
-
-# Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-power-control/cmd
-COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-power-control/vendor
-COPY internal $GOPATH/src/github.com/Cray-HPE/hms-power-control/internal
-COPY .version $GOPATH/src/github.com/Cray-HPE/hms-power-control/.version
-
-### Build Stage ###
-FROM base AS builder
-
-RUN set -ex && go build -v -tags musl -o /usr/local/bin/hms-power-control github.com/Cray-HPE/hms-power-control/cmd/hms-power-control
-
-### Final Stage ###
-
-FROM artifactory.algol60.net/docker.io/alpine:3
-LABEL maintainer="Hewlett Packard Enterprise"
-EXPOSE 28007
-STOPSIGNAL SIGTERM
-
-RUN set -ex \
-    && apk -U upgrade
-
-# Get the hms-power-control from the builder stage.
-COPY --from=builder /usr/local/bin/hms-power-control /usr/local/bin/.
-COPY configs configs
-COPY .version /
-
-### IGNORE THIS VVVV
-# Can also set KV_URL to point to the Key Value service access.
-# This can be a reference to an etcd service, or "mem:", in which
-# case, this will store everything directly in memory.
-# If this is not set, then the service will look for the env vars
-# ETCD_HOST and ETCD_PORT, and if those are set, it will construct
-# the service name as http://$ETCD_HOST:$ETCD_PORT.
-# ENV KV_URL=mem:
-### ENDOF IGNORE ^^^
+    && apk update \
+    && apk add --no-cache tini \
+    && rm -rf /var/cache/apk/*  \
+    && rm -rf /tmp/*
 
 # Setup environment variables.
 ENV SMS_SERVER=https://api-gateway.default.svc.cluster.local/apis/smd
@@ -88,7 +49,13 @@ ENV API_URL "http://cray-power"
 ENV API_SERVER_PORT ":28007"
 ENV API_BASE_PATH "/v1"
 
+COPY hms-power-control /usr/local/bin/
+COPY configs configs
+COPY .version /
+
 #nobody 65534:65534
 USER 65534:65534
 
-CMD ["sh", "-c", "hms-power-control"]
+CMD /usr/local/bin/hms-power-control
+
+ENTRYPOINT ["/sbin/tini", "--"]
