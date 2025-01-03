@@ -58,10 +58,11 @@ const defaultSMSServer = "https://api-gw-service-nmn/apis/smd"
 // operations until there are MAX_NUM_COMPLETED or they expire after
 // EXPIRE_TIME_MINS at which point PCS will start deleting the oldest entries.
 // NOTE: Transactions and power-cap operations are counted separately for
-//       MAX_NUM_COMPLETED.
+//
+//	MAX_NUM_COMPLETED.
 const (
 	defaultMaxNumCompleted = 20000 // Maximum number of completed records to keep (default 20k).
-	defaultExpireTimeMins = 1440   // Time, in mins, to keep completed records (default 24 hours).
+	defaultExpireTimeMins  = 1440  // Time, in mins, to keep completed records (default 24 hours).
 )
 
 const (
@@ -103,7 +104,7 @@ func main() {
 	var VaultKeypath string
 	var StateManagerServer string
 	var hsmlockEnabled bool = true
-	var runControl bool = false //noting to run yet!
+	var runControl bool = false     //noting to run yet!
 	var credCacheDuration int = 600 //In seconds. 10 mins?
 	var maxNumCompleted int
 	var expireTimeMins int
@@ -145,9 +146,9 @@ func main() {
 	var envstr string
 
 	envstr = os.Getenv("PCS_BASE_TRS_TASK_TIMEOUT")
-	if (envstr != "") {
-		tps,err := strconv.Atoi(envstr)
-		if (err != nil) {
+	if envstr != "" {
+		tps, err := strconv.Atoi(envstr)
+		if err != nil {
 			logger.Log.Errorf("Invalid value of PCS_BASE_TRS_TASK_TIMEOUT, defaulting to %d",
 				baseTrsTaskTimeout)
 		} else {
@@ -268,11 +269,11 @@ func main() {
 	//Hardware State Manager CONFIGURATION
 	HSM = &hsm.HSMv2{}
 	hsmGlob := hsm.HSM_GLOBALS{
-		SvcName: serviceName,
-		Logger: logger.Log,
-		Running: &Running,
-		LockEnabled: hsmlockEnabled,
-		SMUrl: StateManagerServer,
+		SvcName:       serviceName,
+		Logger:        logger.Log,
+		Running:       &Running,
+		LockEnabled:   hsmlockEnabled,
+		SMUrl:         StateManagerServer,
 		SVCHttpClient: svcClient,
 	}
 	HSM.Init(&hsmGlob)
@@ -297,8 +298,8 @@ func main() {
 	//DOMAIN CONFIGURATION
 	var domainGlobals domain.DOMAIN_GLOBALS
 	domainGlobals.NewGlobals(&BaseTRSTask, &TLOC_rf, &TLOC_svc, rfClient, svcClient,
-	                         rfClientLock, &Running, &DSP, &HSM, VaultEnabled,
-	                         &CS, &DLOCK, maxNumCompleted, expireTimeMins, podName)
+		rfClientLock, &Running, &DSP, &HSM, VaultEnabled,
+		&CS, &DLOCK, maxNumCompleted, expireTimeMins, podName)
 
 	//Wait for vault PKI to respond for CA bundle.  Once this happens, re-do
 	//the globals.  This goroutine will run forever checking if the CA trust
@@ -382,12 +383,12 @@ func main() {
 	statusTimeout := 30
 	statusHttpRetries := 3
 	maxIdleConns := 4000
-	maxIdleConnsPerHost := 4	// 4000 / 4 = 4 open conns for each of 1000 BMCs
+	maxIdleConnsPerHost := 4 // 4000 / 4 = 4 open conns for each of 1000 BMCs
 
 	envstr = os.Getenv("PCS_POWER_SAMPLE_INTERVAL")
-	if (envstr != "") {
-		tps,err := strconv.Atoi(envstr)
-		if (err != nil) {
+	if envstr != "" {
+		tps, err := strconv.Atoi(envstr)
+		if err != nil {
 			logger.Log.Errorf("Invalid value of PCS_POWER_SAMPLE_INTERVAL, defaulting to %d",
 				pwrSampleInterval)
 		} else {
@@ -396,9 +397,9 @@ func main() {
 		}
 	}
 	envstr = os.Getenv("PCS_DISTLOCK_TIMEOUT")
-	if (envstr != "") {
-		tps,err := strconv.Atoi(envstr)
-		if (err != nil) {
+	if envstr != "" {
+		tps, err := strconv.Atoi(envstr)
+		if err != nil {
 			logger.Log.Errorf("Invalid value of PCS_DISTLOCK_TIMEOUT, defaulting to %d",
 				dlockTimeout)
 		} else {
@@ -407,9 +408,9 @@ func main() {
 		}
 	}
 	envstr = os.Getenv("PCS_STATUS_TIMEOUT")
-	if (envstr != "") {
-		tps,err := strconv.Atoi(envstr)
-		if (err != nil) {
+	if envstr != "" {
+		tps, err := strconv.Atoi(envstr)
+		if err != nil {
 			logger.Log.Errorf("Invalid value of PCS_STATUS_TIMEOUT, defaulting to %d",
 				statusTimeout)
 		} else {
@@ -418,9 +419,9 @@ func main() {
 		}
 	}
 	envstr = os.Getenv("PCS_STATUS_HTTP_RETRIES")
-	if (envstr != "") {
-		tps,err := strconv.Atoi(envstr)
-		if (err != nil) {
+	if envstr != "" {
+		tps, err := strconv.Atoi(envstr)
+		if err != nil {
 			logger.Log.Errorf("Invalid value of PCS_STATUS_HTTP_RETRIES, defaulting to %d",
 				statusHttpRetries)
 		} else {
@@ -429,9 +430,9 @@ func main() {
 		}
 	}
 	envstr = os.Getenv("PCS_MAX_IDLE_CONNS")
-	if (envstr != "") {
-		tps,err := strconv.Atoi(envstr)
-		if (err != nil) {
+	if envstr != "" {
+		tps, err := strconv.Atoi(envstr)
+		if err != nil {
 			logger.Log.Errorf("Invalid value of PCS_MAX_IDLE_CONNS, defaulting to %d",
 				maxIdleConns)
 		} else {
@@ -440,9 +441,9 @@ func main() {
 		}
 	}
 	envstr = os.Getenv("PCS_MAX_IDLE_CONNS_PER_HOST")
-	if (envstr != "") {
-		tps,err := strconv.Atoi(envstr)
-		if (err != nil) {
+	if envstr != "" {
+		tps, err := strconv.Atoi(envstr)
+		if err != nil {
 			logger.Log.Errorf("Invalid value of PCS_MAX_IDLE_CONNS_PER_HOST, defaulting to %d",
 				maxIdleConnsPerHost)
 		} else {
@@ -452,8 +453,8 @@ func main() {
 	}
 
 	domain.PowerStatusMonitorInit(&domainGlobals,
-		(time.Duration(dlockTimeout)*time.Second),
-		logger.Log,(time.Duration(pwrSampleInterval)*time.Second),
+		(time.Duration(dlockTimeout) * time.Second),
+		logger.Log, (time.Duration(pwrSampleInterval) * time.Second),
 		statusTimeout, statusHttpRetries, maxIdleConns, maxIdleConnsPerHost)
 
 	domain.StartRecordsReaper()
@@ -487,7 +488,6 @@ func main() {
 
 		close(idleConnsClosed)
 	}()
-
 
 	///////////////////////
 	// START
