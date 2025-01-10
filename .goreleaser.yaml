@@ -33,9 +33,9 @@ builds:
 
 dockers:
   - image_templates:
-      - &amd64_linux_image ghcr.io/cjh1/{{.ProjectName}}:{{ .Tag }}-amd64
-      - ghcr.io/cjh1/{{.ProjectName}}:{{ .Major }}-amd64
-      - ghcr.io/cjh1/{{.ProjectName}}:{{ .Major }}.{{ .Minor }}-amd64
+      - &amd64_linux_image ghcr.io/openchami/{{.ProjectName}}:{{ .Tag }}-amd64
+      - ghcr.io/openchami/{{.ProjectName}}:{{ .Major }}-amd64
+      - ghcr.io/openchami/{{.ProjectName}}:{{ .Major }}.{{ .Minor }}-amd64
     use: buildx
     build_flag_templates:
       - "--pull"
@@ -54,9 +54,9 @@ dockers:
       - .version
 
   # - image_templates:
-  #     - &arm64v8_linux_image ghcr.io/cjh1/{{.ProjectName}}:{{ .Tag }}-arm64
-  #     - ghcr.io/cjh1/{{.ProjectName}}:{{ .Major }}-arm64
-  #     - ghcr.io/cjh1/{{.ProjectName}}:{{ .Major }}.{{ .Minor }}-arm64
+  #     - &arm64v8_linux_image ghcr.io/openchami/{{.ProjectName}}:{{ .Tag }}-arm64
+  #     - ghcr.io/openchami/{{.ProjectName}}:{{ .Major }}-arm64
+  #     - ghcr.io/openchami/{{.ProjectName}}:{{ .Major }}.{{ .Minor }}-arm64
   #   use: buildx
   #   build_flag_templates:
   #     - "--pull"
@@ -74,22 +74,22 @@ dockers:
   #     - .version
 
 docker_manifests:
-  - name_template: "ghcr.io/cjh1/{{.ProjectName}}:latest"
+  - name_template: "ghcr.io/openchami/{{.ProjectName}}:latest"
     image_templates:
       - *amd64_linux_image
       #- *arm64v8_linux_image
 
-  - name_template: "ghcr.io/cjh1/{{.ProjectName}}:{{ .Tag }}"
+  - name_template: "ghcr.io/openchami/{{.ProjectName}}:{{ .Tag }}"
     image_templates:
       - *amd64_linux_image
       #- *arm64v8_linux_image
 
-  - name_template: "ghcr.io/cjh1/{{.ProjectName}}:{{ .Major }}"
+  - name_template: "ghcr.io/openchami/{{.ProjectName}}:{{ .Major }}"
     image_templates:
       - *amd64_linux_image
       #- *arm64v8_linux_image
 
-  - name_template: "ghcr.io/cjh1/{{.ProjectName}}:{{ .Major }}.{{ .Minor }}"
+  - name_template: "ghcr.io/openchami/{{.ProjectName}}:{{ .Major }}.{{ .Minor }}"
     image_templates:
       - *amd64_linux_image
       #- *arm64v8_linux_image

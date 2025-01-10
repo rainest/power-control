@@ -74,6 +74,6 @@ jobs:
       - name: Generate build provenance
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ghcr.io/cjh1/pcs
+          subject-name: ghcr.io/openchami/pcs
           subject-digest: ${{ steps.process_goreleaser_output.outputs.digest }}
           push-to-registry: true
