@@ -54,7 +54,6 @@ RUN go env -w GO111MODULE=auto
 COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
 COPY configs configs
 COPY scripts scripts
-COPY vendor $GOPATH/src/github.com/OpenCHAMI/power-control/v2/vendor
 COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
 COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
 
