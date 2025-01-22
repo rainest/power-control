@@ -38,8 +38,8 @@ import (
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"github.com/OpenCHAMI/power-control/v2/internal/model"
 	"github.com/OpenCHAMI/power-control/v2/internal/storage"
-	base "github.com/Cray-HPE/hms-base"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/v3/pkg/trs_http_api"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 )
@@ -543,7 +543,7 @@ func (ts *Transitions_TS) TestSequenceComponents() {
 		testParams     model.TransitionParameter
 		testTransition model.Transition
 		testXnameMap   map[string]*TransitionComponent
-		resultsSeq     map[string]map[base.HMSType][]*TransitionComponent
+		resultsSeq     map[string]map[xnametypes.HMSType][]*TransitionComponent
 	)
 	t = ts.T()
 

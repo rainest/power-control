@@ -28,7 +28,7 @@ import (
 	"io"
 	"net/http"
 
-	base "github.com/Cray-HPE/hms-base"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/OpenCHAMI/power-control/v2/internal/domain"
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"github.com/OpenCHAMI/power-control/v2/internal/model"
@@ -67,7 +67,7 @@ func doGetPowerStatus(w http.ResponseWriter,
 		return
 	}
 	//validates the schema of the xname, not that the xname actually exists; that requires a HSM call.
-	xnames, badXnames := base.ValidateCompIDs(xnamesReq, true)
+	xnames, badXnames := xnametypes.ValidateCompIDs(xnamesReq, true)
 	if len(badXnames) > 0 {
 
 		errormsg := "invalid xnames detected:"
