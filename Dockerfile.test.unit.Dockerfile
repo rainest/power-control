@@ -56,10 +56,13 @@ COPY configs configs
 COPY scripts scripts
 COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
 COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
+COPY go.mod $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.mod
+COPY go.sum $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.sum
 
 CMD set -ex \
     && ./scripts/wait-for-discovery.sh \
     && go version \
+    && cd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/ \
     && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/domain \
     && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/api \
     && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/model \
