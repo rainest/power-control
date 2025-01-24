@@ -32,7 +32,7 @@ import (
 	"strings"
 	"time"
 
-	base "github.com/Cray-HPE/hms-base"
+	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/OpenCHAMI/power-control/v2/internal/credstore"
 	pcshsm "github.com/OpenCHAMI/power-control/v2/internal/hsm"
 	pcsmodel "github.com/OpenCHAMI/power-control/v2/internal/model"
