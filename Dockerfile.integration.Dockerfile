@@ -36,14 +36,15 @@ RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
 COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
-COPY vendor $GOPATH/src/github.com/OpenCHAMI/power-control/v2/vendor
+COPY go.mod $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.mod
+COPY go.sum $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.sum
 COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
 COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
 
 ### Build Stage ###
 FROM base AS builder
 
-RUN set -ex && go build -v -tags musl -o /usr/local/bin/power-control github.com/OpenCHAMI/power-control/v2/cmd/power-control
+RUN set -ex  && go build -C $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd/power-control -v -tags musl -o /usr/local/bin/power-control
 
 ### Final Stage ###
 

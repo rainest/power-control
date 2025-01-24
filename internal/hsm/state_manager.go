@@ -34,7 +34,7 @@ import (
 	"strings"
 	"time"
 
-	base "github.com/Cray-HPE/hms-base"
+	base "github.com/Cray-HPE/hms-base/v2"
 	reservation "github.com/OpenCHAMI/smd/v2/pkg/service-reservations"
 	"github.com/OpenCHAMI/smd/v2/pkg/sm"
 	"github.com/sirupsen/logrus"

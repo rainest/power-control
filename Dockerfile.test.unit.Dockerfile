@@ -54,13 +54,15 @@ RUN go env -w GO111MODULE=auto
 COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
 COPY configs configs
 COPY scripts scripts
-COPY vendor $GOPATH/src/github.com/OpenCHAMI/power-control/v2/vendor
 COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
 COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
+COPY go.mod $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.mod
+COPY go.sum $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.sum
 
 CMD set -ex \
     && ./scripts/wait-for-discovery.sh \
     && go version \
+    && cd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/ \
     && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/domain \
     && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/api \
     && go test -cover -v -tags musl -o power-control github.com/OpenCHAMI/power-control/v2/internal/model \

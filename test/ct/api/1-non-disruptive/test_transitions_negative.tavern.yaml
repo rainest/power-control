@@ -51,7 +51,7 @@ stages:
       method: PATCH
       verify: !bool "{verify}"
     response:
-      status_code: 405
+      status_code: 404
 
 ---
 test_name: Verify transitions handles requests for non-present nodes
