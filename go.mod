@@ -11,7 +11,6 @@ require (
 	github.com/Cray-HPE/hms-certs v1.4.0
 	github.com/Cray-HPE/hms-compcredentials v1.11.3
 	github.com/Cray-HPE/hms-hmetcd v1.12.0
-	github.com/Cray-HPE/hms-power-control v1.10.0
 	github.com/Cray-HPE/hms-securestorage v1.13.0
 	github.com/Cray-HPE/hms-trs-app-api/v3 v3.0.4
 	github.com/Cray-HPE/hms-xname v1.4.0
@@ -25,7 +24,6 @@ require (
 
 require (
 	github.com/Cray-HPE/hms-base v1.15.1 // indirect
-	github.com/Cray-HPE/hms-smd/v2 v2.4.0 // indirect
 	github.com/Cray-HPE/hms-trs-kafkalib/v2 v2.0.2 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/confluentinc/confluent-kafka-go/v2 v2.8.0 // indirect
@@ -65,5 +63,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
 	google.golang.org/grpc v1.69.4 // indirect
 	google.golang.org/protobuf v1.36.3 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
