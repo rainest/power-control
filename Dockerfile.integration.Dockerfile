@@ -39,7 +39,6 @@ COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
 COPY go.mod $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.mod
 COPY go.sum $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.sum
 COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
-COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
 
 ### Build Stage ###
 FROM base AS builder
@@ -60,8 +59,6 @@ RUN set -ex \
 # Get the power-control from the builder stage.
 COPY --from=builder /usr/local/bin/power-control /usr/local/bin/.
 COPY configs configs
-COPY .version /
-
 
 # Setup environment variables.
 ENV SMS_SERVER="http://cray-smd:27779"

@@ -55,7 +55,6 @@ COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
 COPY configs configs
 COPY scripts scripts
 COPY internal $GOPATH/src/github.com/OpenCHAMI/power-control/v2/internal
-COPY .version $GOPATH/src/github.com/OpenCHAMI/power-control/v2/.version
 COPY go.mod $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.mod
 COPY go.sum $GOPATH/src/github.com/OpenCHAMI/power-control/v2/go.sum
 

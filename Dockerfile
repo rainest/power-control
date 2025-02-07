@@ -51,7 +51,6 @@ ENV API_BASE_PATH="/v1"
 
 COPY power-control /usr/local/bin/
 COPY configs configs
-COPY .version /
 
 #nobody 65534:65534
 USER 65534:65534
