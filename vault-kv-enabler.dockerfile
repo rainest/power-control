@@ -37,7 +37,6 @@ ENV KV_STORES hms-creds
 
 COPY scripts/wait-for.sh /
 COPY scripts /scripts
-COPY .version /
 
 RUN echo STUFF
 

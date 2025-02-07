@@ -21,8 +21,8 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 # Service
-NAME ?= cray-power-control
-VERSION ?= $(shell cat .version)
+NAME    ?= cray-power-control
+VERSION ?= $(shell git describe --tags --always --abbrev=0)
 
 all: image unittest integration snyk ct ct_image
 

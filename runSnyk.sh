@@ -32,7 +32,7 @@ echo Snyk project check: $PROJ_CHECK
 
 DOCKER_CHECK=
 if [ -f Dockerfile ]; then
-    DOCKER_IMAGE=${PWD/*\//}:$(cat .version)
+    DOCKER_IMAGE=${PWD/*\//}:$(git describe --tags --always --abbrev=0)
     docker build --tag $DOCKER_IMAGE .
     OUT=$(set -x; snyk test --docker $DOCKER_IMAGE --file=${PWD}/Dockerfile $SNYK_OPTS)
     DOCKER_CHECK=OK
