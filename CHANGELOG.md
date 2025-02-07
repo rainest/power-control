@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for storing large transitions in etcd ( from upstream )
 - Changed to truncate long messages ( from upstream )
 - Changed to page large transitions ( from upstream )
+- Enable ARM builds
+- Remove .version file
 
 ### Security
 
