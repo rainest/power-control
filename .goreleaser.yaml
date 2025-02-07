@@ -12,8 +12,6 @@ builds:
     binary: power-control
     goos:
       - linux
-      - darwin
-      - windows
     goarch:
       - amd64
       - arm64
@@ -21,6 +19,11 @@ builds:
       - v3
     env:
       - CGO_ENABLED=1
+      - >-
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "arm64"}}CC=aarch64-linux-gnu-gcc{{- end }}
+        {{- end }}
+
     ldflags:
       - "-s -w -X main.GitCommit={{.Commit}} \
          -X main.BuildTime={{.Timestamp}} \
