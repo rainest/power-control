@@ -26,8 +26,8 @@ import (
 	"encoding/json"
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"github.com/OpenCHAMI/power-control/v2/internal/model"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	logrus "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -74,8 +74,7 @@ func WriteHeadersWithLocation(w http.ResponseWriter, pb model.Passback, location
 // GetUUIDFromVars - attempts to retrieve a UUID from an http.Request URL
 // returns a passback
 func GetUUIDFromVars(key string, r *http.Request) (passback model.Passback) {
-	vars := mux.Vars(r)
-	value := vars[key]
+	value := chi.URLParam(r, key)
 	logger.Log.WithFields(logrus.Fields{"key": value}).Debug("Attempting to parse UUID")
 
 	UUID, err := uuid.Parse(value)
