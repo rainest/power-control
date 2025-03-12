@@ -34,25 +34,22 @@ import (
 	"github.com/OpenCHAMI/power-control/v2/internal/model"
 )
 
-
 type healthRsp struct {
-	KvStore        string `json:"KvStore"`
-	DistLocking    string `json:"DistLocking"`
-	StateManager   string `json:"StateManager"`
-	Vault          string `json:"Vault"`
-	TaskRunner     string `json:"TaskRunner"`
+	KvStore      string `json:"KvStore"`
+	DistLocking  string `json:"DistLocking"`
+	StateManager string `json:"StateManager"`
+	Vault        string `json:"Vault"`
+	TaskRunner   string `json:"TaskRunner"`
 }
-
 
 // The API layer is responsible for Json Unmarshaling and Marshaling,
 // creating the correct parameter types, validating the parameters by schema
-// and calling the domain layer.   
-
+// and calling the domain layer.
 
 // Returns the microservice liveness indicator.  Any response means we're live.
 func GetLiveness(w http.ResponseWriter, req *http.Request) {
 	// Drain and close request body to ensure connection reuse
-	if (req.Body != nil) {
+	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 		req.Body.Close()
 	}
@@ -65,55 +62,55 @@ func GetReadiness(w http.ResponseWriter, req *http.Request) {
 	var err error
 
 	// Drain and close request body to ensure connection reuse
-	if (req.Body != nil) {
+	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 		req.Body.Close()
 	}
 
 	fname := "GetReadiness"
-	glb   := *domain.GLOB
+	glb := *domain.GLOB
 	ready := true
 
 	//Check KVStore and dist locks
 
 	err = (*glb.DSP).Ping()
-	if (err != nil) {
-		logger.Log.Errorf("%s: Ping() failed to storage provider.",fname)
+	if err != nil {
+		logger.Log.Errorf("%s: Ping() failed to storage provider.", fname)
 		ready = false
 	}
 
 	err = (*glb.DistLock).Ping()
-	if (err != nil) {
-		logger.Log.Errorf("%s: Ping() failed to dist lock provider.",fname)
+	if err != nil {
+		logger.Log.Errorf("%s: Ping() failed to dist lock provider.", fname)
 		ready = false
 	}
 
 	//Check HSM
 
 	err = (*glb.HSM).Ping()
-	if (err != nil) {
-		logger.Log.Errorf("%s: Ping() failed to HSM.",fname)
+	if err != nil {
+		logger.Log.Errorf("%s: Ping() failed to HSM.", fname)
 		ready = false
 	}
 
 	//Check Vault
 
-	if (glb.VaultEnabled) {
-		if (!(*glb.CS).IsReady()) {
-			logger.Log.Errorf("%s: Cred store is not ready.",fname)
+	if glb.VaultEnabled {
+		if !(*glb.CS).IsReady() {
+			logger.Log.Errorf("%s: Cred store is not ready.", fname)
 			ready = false
 		}
 	}
 
 	//Check TRS
 
-	alive,terr := (*glb.RFTloc).Alive()
-    if (!alive || (terr != nil)) {
-        logger.Log.Infof("%s: TRS not alive, err: %v",fname,err)
-        ready = false
-    }
+	alive, terr := (*glb.RFTloc).Alive()
+	if !alive || (terr != nil) {
+		logger.Log.Infof("%s: TRS not alive, err: %v", fname, err)
+		ready = false
+	}
 
-	if (ready) {
+	if ready {
 		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -133,32 +130,32 @@ func GetHealth(w http.ResponseWriter, req *http.Request) {
 	remotemode := "remote mode"
 	sep := ", "
 
-	glb   := *domain.GLOB
+	glb := *domain.GLOB
 
 	// Drain and close request body to ensure connection reuse
-	if (req.Body != nil) {
+	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 		req.Body.Close()
 	}
 
 	//Check KVStore
 
-	if (glb.DSP == nil) {
+	if glb.DSP == nil {
 		rspData.KvStore = unconnected
 	} else {
 		err = (*glb.DSP).Ping()
-		if (err == nil) {
+		if err == nil {
 			rspData.KvStore = connected + sep + responsive
 		} else {
 			rspData.KvStore = connected + sep + unresponsive
 		}
 	}
 
-	if (glb.DistLock == nil) {
+	if glb.DistLock == nil {
 		rspData.DistLocking = unconnected
 	} else {
 		err = (*glb.DistLock).Ping()
-		if (err == nil) {
+		if err == nil {
 			rspData.DistLocking = connected + sep + responsive
 		} else {
 			rspData.DistLocking = connected + sep + unresponsive
@@ -167,11 +164,11 @@ func GetHealth(w http.ResponseWriter, req *http.Request) {
 
 	//Check HSM
 
-	if (glb.HSM == nil) {
+	if glb.HSM == nil {
 		rspData.StateManager = unconnected
 	} else {
 		err = (*glb.HSM).Ping()
-		if (err == nil) {
+		if err == nil {
 			rspData.StateManager = connected + sep + responsive
 		} else {
 			rspData.StateManager = connected + sep + unresponsive
@@ -180,11 +177,11 @@ func GetHealth(w http.ResponseWriter, req *http.Request) {
 
 	//Check Vault
 
-	if (glb.VaultEnabled) {
-		if (glb.CS == nil) {
+	if glb.VaultEnabled {
+		if glb.CS == nil {
 			rspData.Vault = unconnected
 		} else {
-			if ((*glb.CS).IsReady()) {
+			if (*glb.CS).IsReady() {
 				rspData.Vault = connected + sep + responsive
 			} else {
 				rspData.Vault = connected + sep + unresponsive
@@ -196,14 +193,14 @@ func GetHealth(w http.ResponseWriter, req *http.Request) {
 
 	//Check TRS
 
-	if (glb.RFTloc == nil) {
+	if glb.RFTloc == nil {
 		rspData.TaskRunner = unconnected
 	} else {
-		alive,terr := (*glb.RFTloc).Alive()
-		if (terr != nil) {
+		alive, terr := (*glb.RFTloc).Alive()
+		if terr != nil {
 			rspData.TaskRunner = unconnected + sep + unresponsive
 		} else {
-			if (!alive) {
+			if !alive {
 				rspData.TaskRunner = connected + sep + unresponsive
 			} else {
 				rspData.TaskRunner = connected + sep + responsive
@@ -212,14 +209,13 @@ func GetHealth(w http.ResponseWriter, req *http.Request) {
 
 		ktype := reflect.TypeOf((*glb.RFTloc)).String()
 		ktypeTL := strings.ToLower(ktype)
-		if (strings.Contains(ktypeTL,"local")) {
+		if strings.Contains(ktypeTL, "local") {
 			rspData.TaskRunner = rspData.TaskRunner + sep + localmode
 		} else {
 			rspData.TaskRunner = rspData.TaskRunner + sep + remotemode
 		}
 	}
 
-	pb := model.Passback{StatusCode: http.StatusOK, Obj: rspData,}
-	WriteHeaders(w,pb)
+	pb := model.Passback{StatusCode: http.StatusOK, Obj: rspData}
+	WriteHeaders(w, pb)
 }
-

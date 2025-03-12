@@ -23,14 +23,24 @@
 package api
 
 import (
-	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/OpenCHAMI/power-control/v2/internal/logger"
+
+	jwtauth "github.com/OpenCHAMI/jwtauth/v5"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	openchami_authenticator "github.com/openchami/chi-middleware/auth"
+	openchami_logger "github.com/openchami/chi-middleware/log"
+	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 )
+
+// JWT
+var tokenAuth *jwtauth.JWTAuth
 
 // Route - struct containing name,method, pattern and handlerFunction to invoke.
 type Route struct {
@@ -75,8 +85,29 @@ func Logger(inner http.Handler, name string) http.Handler {
 // NewRouter - create a new chi Router; and initializes it with the routes
 func NewRouter() *chi.Mux {
 	router := chi.NewRouter()
+	// Setup logger
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	logger := zlog.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	router.Use(middleware.RedirectSlashes)
-	for _, route := range routes {
+	router.Use(openchami_logger.OpenCHAMILogger(logger))
+	router.Route("/", func(r chi.Router) {
+		r.Use(
+			jwtauth.Verifier(tokenAuth),
+			openchami_authenticator.AuthenticatorWithRequiredClaims(tokenAuth, []string{"sub", "iss", "aud"}),
+		)
+		for _, route := range protectedRoutes {
+			var handler http.Handler = route.HandlerFunc
+			handler = Logger(handler, route.Name)
+
+			router.Method(route.Method, route.Pattern, handler)
+
+			// With v1
+			router.Method(route.Method, "/v1"+route.Pattern, handler)
+		}
+	})
+
+	for _, route := range publicRoutes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 
@@ -89,8 +120,7 @@ func NewRouter() *chi.Mux {
 	return router
 }
 
-var routes = Routes{
-
+var protectedRoutes = Routes{
 	Route{
 		"Index",
 		"GET",
@@ -160,6 +190,8 @@ var routes = Routes{
 		"/power-cap/{taskID}",
 		GetPowerCapQuery,
 	},
+}
+var publicRoutes = Routes{
 	Route{
 		"GetLiveness",
 		strings.ToUpper("get"),
