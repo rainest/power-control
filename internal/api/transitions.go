@@ -109,8 +109,8 @@ func GetTransitions(w http.ResponseWriter, req *http.Request) {
 		pb = GetUUIDFromVars("transitionID", req)
 
 		// Drain and close request body to ensure connection reuse
-		if (req.Body != nil) {
-			_, _ = io.Copy(io.Discard, req.Body)	// drain in case partially read
+		if req.Body != nil {
+			_, _ = io.Copy(io.Discard, req.Body) // drain in case partially read
 			req.Body.Close()
 		}
 
@@ -123,7 +123,7 @@ func GetTransitions(w http.ResponseWriter, req *http.Request) {
 
 	} else {
 		// Drain and close request body to ensure connection reuse
-		if (req.Body != nil) {
+		if req.Body != nil {
 			_, _ = io.Copy(io.Discard, req.Body)
 			req.Body.Close()
 		}
@@ -139,7 +139,7 @@ func AbortTransitionID(w http.ResponseWriter, req *http.Request) {
 	pb := GetUUIDFromVars("transitionID", req)
 
 	// Drain and close request body to ensure connection reuse
-	if (req.Body != nil) {
+	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 		req.Body.Close()
 	}

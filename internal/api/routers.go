@@ -50,9 +50,9 @@ func Logger(inner http.Handler, name string) http.Handler {
 
 		inner.ServeHTTP(w, r)
 
-		if name == "GetLiveness" || 
-		   name == "GetReadiness" ||
-		   name == "GetHealth" {
+		if name == "GetLiveness" ||
+			name == "GetReadiness" ||
+			name == "GetHealth" {
 			logger.Log.Debugf(
 				"%s %s %s %s",
 				r.Method,
