@@ -138,6 +138,7 @@ func main() {
 	flag.IntVar(&etcdPageSize, "etcd_page_size", storage.DefaultEtcdPageSize, "The maximum number of records to put in each etcd entry.")
 	flag.IntVar(&maxMessageLength, "max_transition_message_length", storage.DefaultMaxMessageLen, "The maximum length of messages per task in a transition.")
 	flag.IntVar(&etcdMaxObjectSize, "etcd_max_object_size", storage.DefaultMaxEtcdObjectSize, "The maximum data size in bytes for objects in etcd.")
+	flag.StringVar(&jwksURL, "jwks-url", "", "Set the JWKS URL to fetch public key for validation")
 
 	flag.Parse()
 
