@@ -36,13 +36,13 @@ import (
 
 	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
+	trsapi "github.com/Cray-HPE/hms-trs-app-api/v3/pkg/trs_http_api"
 	"github.com/OpenCHAMI/power-control/v2/internal/api"
 	"github.com/OpenCHAMI/power-control/v2/internal/credstore"
 	"github.com/OpenCHAMI/power-control/v2/internal/domain"
 	"github.com/OpenCHAMI/power-control/v2/internal/hsm"
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"github.com/OpenCHAMI/power-control/v2/internal/storage"
-	trsapi "github.com/Cray-HPE/hms-trs-app-api/v3/pkg/trs_http_api"
 	"github.com/namsral/flag"
 	"github.com/sirupsen/logrus"
 )
@@ -84,6 +84,8 @@ var (
 	HSM                 hsm.HSMProvider
 	CS                  credstore.CredStoreProvider
 	DLOCK               storage.DistributedLockProvider
+	jwksURL             string
+	jwksFetchInterval   int = 5
 )
 
 func main() {
@@ -466,6 +468,21 @@ func main() {
 		} else {
 			logger.Log.Infof("Using PCS_MAX_IDLE_CONNS_PER_HOST: %v", tps)
 			maxIdleConnsPerHost = tps
+		}
+	}
+
+	// Initialize token authorization and load JWKS well-knowns from .well-known endpoint
+	if jwksURL != "" {
+		logger.Log.Info("Fetching public key from server...")
+		for i := 0; i <= 5; i++ {
+			err = api.FetchPublicKeyFromURL(jwksURL)
+			if err != nil {
+				logger.Log.Errorf("Failed to initialize auth token: %v", err)
+				time.Sleep(time.Duration(jwksFetchInterval) * time.Second)
+				continue
+			}
+			logger.Log.Info("Initialized the auth token successfully.")
+			break
 		}
 	}
 
