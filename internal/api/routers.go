@@ -28,7 +28,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // Route - struct containing name,method, pattern and handlerFunction to invoke.
@@ -49,9 +50,9 @@ func Logger(inner http.Handler, name string) http.Handler {
 
 		inner.ServeHTTP(w, r)
 
-		if name == "GetLiveness" || 
-		   name == "GetReadiness" ||
-		   name == "GetHealth" {
+		if name == "GetLiveness" ||
+			name == "GetReadiness" ||
+			name == "GetHealth" {
 			logger.Log.Debugf(
 				"%s %s %s %s",
 				r.Method,
@@ -71,25 +72,18 @@ func Logger(inner http.Handler, name string) http.Handler {
 	})
 }
 
-// NewRouter - create a new mux Router; and initializes it with the routes
-func NewRouter() *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
+// NewRouter - create a new chi Router; and initializes it with the routes
+func NewRouter() *chi.Mux {
+	router := chi.NewRouter()
+	router.Use(middleware.RedirectSlashes)
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 
-		router.
-			Methods(route.Method).
-			Path(route.Pattern).
-			Name(route.Name).
-			Handler(handler)
+		router.Method(route.Method, route.Pattern, handler)
 
 		// With v1
-		router.
-			Methods(route.Method).
-			Path("/v1" + route.Pattern).
-			Name(route.Name).
-			Handler(handler)
+		router.Method(route.Method, "/v1"+route.Pattern, handler)
 	}
 
 	return router

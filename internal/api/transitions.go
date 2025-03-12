@@ -31,8 +31,8 @@ import (
 	"github.com/OpenCHAMI/power-control/v2/internal/domain"
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"github.com/OpenCHAMI/power-control/v2/internal/model"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -102,16 +102,15 @@ func CreateTransition(w http.ResponseWriter, req *http.Request) {
 // GetTransitions - returns all transitions
 func GetTransitions(w http.ResponseWriter, req *http.Request) {
 	var pb model.Passback
-	params := mux.Vars(req)
 
 	//If actionID is not in the params, then do ALL
-	if _, ok := params["transitionID"]; ok {
+	if chi.URLParam(req, "transitionID") != "" {
 		//parse uuid and if its good then call GetTransition
 		pb = GetUUIDFromVars("transitionID", req)
 
 		// Drain and close request body to ensure connection reuse
-		if (req.Body != nil) {
-			_, _ = io.Copy(io.Discard, req.Body)	// drain in case partially read
+		if req.Body != nil {
+			_, _ = io.Copy(io.Discard, req.Body) // drain in case partially read
 			req.Body.Close()
 		}
 
@@ -124,7 +123,7 @@ func GetTransitions(w http.ResponseWriter, req *http.Request) {
 
 	} else {
 		// Drain and close request body to ensure connection reuse
-		if (req.Body != nil) {
+		if req.Body != nil {
 			_, _ = io.Copy(io.Discard, req.Body)
 			req.Body.Close()
 		}
@@ -140,7 +139,7 @@ func AbortTransitionID(w http.ResponseWriter, req *http.Request) {
 	pb := GetUUIDFromVars("transitionID", req)
 
 	// Drain and close request body to ensure connection reuse
-	if (req.Body != nil) {
+	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 		req.Body.Close()
 	}
