@@ -470,6 +470,10 @@ func main() {
 			maxIdleConnsPerHost = tps
 		}
 	}
+	envstr = os.Getenv("PCS_JWKS_URL")
+	if envstr != "" {
+		jwksURL = envstr
+	}
 
 	// Initialize token authorization and load JWKS well-knowns from .well-known endpoint
 	if jwksURL != "" {
