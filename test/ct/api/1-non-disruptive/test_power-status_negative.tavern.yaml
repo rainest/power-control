@@ -65,7 +65,7 @@ stages:
       method: PATCH
       verify: !bool "{verify}"
     response:
-      status_code: 404
+      status_code: 405
 
   - name: Ensure that power-status correctly handles unsupported DELETE operations
     request:
