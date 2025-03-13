@@ -16,6 +16,15 @@ type statusCheckTransport struct {
 	http.RoundTripper
 }
 
+func (ct *statusCheckTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	resp, err := http.DefaultTransport.RoundTrip(req)
+	if err == nil && resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code: %d", resp.StatusCode)
+	}
+
+	return resp, err
+}
+
 func newHTTPClient() *http.Client {
 	return &http.Client{Transport: &statusCheckTransport{}}
 }
