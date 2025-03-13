@@ -91,21 +91,26 @@ func NewRouter() *chi.Mux {
 
 	router.Use(middleware.RedirectSlashes)
 	router.Use(openchami_logger.OpenCHAMILogger(logger))
-	router.Route("/", func(r chi.Router) {
-		r.Use(
-			jwtauth.Verifier(tokenAuth),
-			openchami_authenticator.AuthenticatorWithRequiredClaims(tokenAuth, []string{"sub", "iss", "aud"}),
-		)
-		for _, route := range protectedRoutes {
-			var handler http.Handler = route.HandlerFunc
-			handler = Logger(handler, route.Name)
 
-			router.Method(route.Method, route.Pattern, handler)
+	if tokenAuth != nil {
+		router.Route("/", func(r chi.Router) {
+			r.Use(
+				jwtauth.Verifier(tokenAuth),
+				openchami_authenticator.AuthenticatorWithRequiredClaims(tokenAuth, []string{"sub", "iss", "aud"}),
+			)
+			for _, route := range protectedRoutes {
+				var handler http.Handler = route.HandlerFunc
+				handler = Logger(handler, route.Name)
 
-			// With v1
-			router.Method(route.Method, "/v1"+route.Pattern, handler)
-		}
-	})
+				r.Method(route.Method, route.Pattern, handler)
+
+				// With v1
+				r.Method(route.Method, "/v1"+route.Pattern, handler)
+			}
+		})
+	} else {
+		publicRoutes = append(publicRoutes, protectedRoutes...)
+	}
 
 	for _, route := range publicRoutes {
 		var handler http.Handler = route.HandlerFunc
