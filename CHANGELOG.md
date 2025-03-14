@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replace mux with chi router
 
+### Security
+
+- Update module dependencies related to hms-certs ( upstream CASMHMS-6408 )
+- Updated vault override variables due to hms-certs update ( upstream CASMHMS-6408 )
+
+### Fixed
+
+- Fixed bug in CT tests related to race condition with compressed transitions ( upstream CASMHMS-6408 )
+- Updated Swagger spec to indicate transition tasks only present if not yet compressed ( upstream CASMHMS-6408 )
+
 ## [2.7.0] - 2025-1-22
 
 ### Fixed

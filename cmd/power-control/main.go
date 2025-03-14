@@ -220,25 +220,21 @@ func main() {
 		caURI = envstr
 	}
 	//These are for debugging/testing
-	//
-	// hms-certs v1.4.0 has removed VaultCAUrl, VaultPKIUrl and VaultJWTFile!
-	// so for now remove these option.
-	//
-	// envstr = os.Getenv("PCS_CA_PKI_URL")
-	// if envstr != "" {
-	// 	logger.Log.Infof("Using CA PKI URL: '%s'", envstr)
-	// 	hms_certs.ConfigParams.VaultCAUrl = envstr
-	// }
-	// envstr = os.Getenv("PCS_VAULT_PKI_URL")
-	// if envstr != "" {
-	// 	logger.Log.Infof("Using VAULT PKI URL: '%s'", envstr)
-	// 	hms_certs.ConfigParams.VaultPKIUrl = envstr
-	// }
-	// envstr = os.Getenv("PCS_VAULT_JWT_FILE")
-	// if envstr != "" {
-	// 	logger.Log.Infof("Using Vault JWT file: '%s'", envstr)
-	// 	hms_certs.ConfigParams.VaultJWTFile = envstr
-	// }
+	envstr = os.Getenv("PCS_VAULT_CA_CHAIN_PATH")
+	if envstr != "" {
+		logger.Log.Infof("Replacing default Vault CA Chain with: '%s'",envstr)
+		hms_certs.ConfigParams.CAChainPath = envstr
+	}
+	envstr = os.Getenv("PCS_VAULT_PKI_BASE")
+	if envstr != "" {
+		logger.Log.Infof("Replacing default Vault PKI Base with: '%s'",envstr)
+		hms_certs.ConfigParams.VaultPKIBase = envstr
+	}
+	envstr = os.Getenv("PCS_VAULT_PKI_PATH")
+	if envstr != "" {
+		logger.Log.Infof("Replacing default Vault PKI Path with: '%s'",envstr)
+		hms_certs.ConfigParams.PKIPath = envstr
+	}
 	envstr = os.Getenv("PCS_LOG_INSECURE_FAILOVER")
 	if envstr != "" {
 		yn, _ := strconv.ParseBool(envstr)
