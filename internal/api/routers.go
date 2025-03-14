@@ -98,6 +98,7 @@ func NewRouter() *chi.Mux {
 				jwtauth.Verifier(tokenAuth),
 				openchami_authenticator.AuthenticatorWithRequiredClaims(tokenAuth, []string{"sub", "iss", "aud"}),
 			)
+			// Setup JWT auth only for the specified protected routes
 			for _, route := range protectedRoutes {
 				var handler http.Handler = route.HandlerFunc
 				handler = Logger(handler, route.Name)
@@ -109,9 +110,11 @@ func NewRouter() *chi.Mux {
 			}
 		})
 	} else {
+		// Append protected routes to public routes if JWT auth is disabled
 		publicRoutes = append(publicRoutes, protectedRoutes...)
 	}
 
+	// Setup JWT auth only for all public routes
 	for _, route := range publicRoutes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
