@@ -36,13 +36,13 @@ import (
 
 	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
+	trsapi "github.com/Cray-HPE/hms-trs-app-api/v3/pkg/trs_http_api"
 	"github.com/OpenCHAMI/power-control/v2/internal/api"
 	"github.com/OpenCHAMI/power-control/v2/internal/credstore"
 	"github.com/OpenCHAMI/power-control/v2/internal/domain"
 	"github.com/OpenCHAMI/power-control/v2/internal/hsm"
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"github.com/OpenCHAMI/power-control/v2/internal/storage"
-	trsapi "github.com/Cray-HPE/hms-trs-app-api/v3/pkg/trs_http_api"
 	"github.com/namsral/flag"
 	"github.com/sirupsen/logrus"
 )
@@ -84,6 +84,8 @@ var (
 	HSM                 hsm.HSMProvider
 	CS                  credstore.CredStoreProvider
 	DLOCK               storage.DistributedLockProvider
+	jwksURL             string
+	jwksFetchInterval   int = 5
 )
 
 func main() {
@@ -136,6 +138,7 @@ func main() {
 	flag.IntVar(&etcdPageSize, "etcd_page_size", storage.DefaultEtcdPageSize, "The maximum number of records to put in each etcd entry.")
 	flag.IntVar(&maxMessageLength, "max_transition_message_length", storage.DefaultMaxMessageLen, "The maximum length of messages per task in a transition.")
 	flag.IntVar(&etcdMaxObjectSize, "etcd_max_object_size", storage.DefaultMaxEtcdObjectSize, "The maximum data size in bytes for objects in etcd.")
+	flag.StringVar(&jwksURL, "jwks-url", "", "Set the JWKS URL to fetch public key for validation")
 
 	flag.Parse()
 
@@ -466,6 +469,25 @@ func main() {
 		} else {
 			logger.Log.Infof("Using PCS_MAX_IDLE_CONNS_PER_HOST: %v", tps)
 			maxIdleConnsPerHost = tps
+		}
+	}
+	envstr = os.Getenv("PCS_JWKS_URL")
+	if envstr != "" {
+		jwksURL = envstr
+	}
+
+	// Initialize token authorization and load JWKS well-knowns from .well-known endpoint
+	if jwksURL != "" {
+		logger.Log.Info("Fetching public key from server...")
+		for i := 0; i <= 5; i++ {
+			err = api.FetchPublicKeyFromURL(jwksURL)
+			if err != nil {
+				logger.Log.Errorf("Failed to initialize auth token: %v", err)
+				time.Sleep(time.Duration(jwksFetchInterval) * time.Second)
+				continue
+			}
+			logger.Log.Info("Initialized the auth token successfully.")
+			break
 		}
 	}
 
