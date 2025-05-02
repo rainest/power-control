@@ -1,5 +1,5 @@
 /*
- * (C) Copyright [2021-2024] Hewlett Packard Enterprise Development LP
+ * (C) Copyright [2021-2025] Hewlett Packard Enterprise Development LP
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,6 +28,7 @@ import (
 	"io"
 	"net/http"
 
+	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/OpenCHAMI/power-control/v2/internal/domain"
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
 	"github.com/OpenCHAMI/power-control/v2/internal/model"
@@ -49,8 +50,7 @@ func CreateTransition(w http.ResponseWriter, req *http.Request) {
 	if req.Body != nil {
 		body, err := io.ReadAll(req.Body)
 
-		// Not necessarily needed, but close request body anyways
-		req.Body.Close()
+		base.DrainAndCloseRequestBody(req)
 
 		logger.Log.WithFields(logrus.Fields{"body": string(body)}).Trace("Printing request body")
 
@@ -103,16 +103,12 @@ func CreateTransition(w http.ResponseWriter, req *http.Request) {
 func GetTransitions(w http.ResponseWriter, req *http.Request) {
 	var pb model.Passback
 
+	defer base.DrainAndCloseRequestBody(req)
+
 	//If actionID is not in the params, then do ALL
 	if chi.URLParam(req, "transitionID") != "" {
 		//parse uuid and if its good then call GetTransition
 		pb = GetUUIDFromVars("transitionID", req)
-
-		// Drain and close request body to ensure connection reuse
-		if req.Body != nil {
-			_, _ = io.Copy(io.Discard, req.Body) // drain in case partially read
-			req.Body.Close()
-		}
 
 		if pb.IsError {
 			WriteHeaders(w, pb)
@@ -122,11 +118,6 @@ func GetTransitions(w http.ResponseWriter, req *http.Request) {
 		pb = domain.GetTransition(transitionID)
 
 	} else {
-		// Drain and close request body to ensure connection reuse
-		if req.Body != nil {
-			_, _ = io.Copy(io.Discard, req.Body)
-			req.Body.Close()
-		}
 
 		pb = domain.GetTransitionStatuses()
 	}
@@ -138,11 +129,7 @@ func GetTransitions(w http.ResponseWriter, req *http.Request) {
 func AbortTransitionID(w http.ResponseWriter, req *http.Request) {
 	pb := GetUUIDFromVars("transitionID", req)
 
-	// Drain and close request body to ensure connection reuse
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-		req.Body.Close()
-	}
+	base.DrainAndCloseRequestBody(req)
 
 	if pb.IsError {
 		WriteHeaders(w, pb)
