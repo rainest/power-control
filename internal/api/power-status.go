@@ -1,5 +1,5 @@
 /*
- * (C) Copyright [2021-2024] Hewlett Packard Enterprise Development LP
+ * (C) Copyright [2021-2025] Hewlett Packard Enterprise Development LP
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,6 +28,7 @@ import (
 	"io"
 	"net/http"
 
+	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/OpenCHAMI/power-control/v2/internal/domain"
 	"github.com/OpenCHAMI/power-control/v2/internal/logger"
@@ -95,11 +96,7 @@ func GetPowerStatus(w http.ResponseWriter, req *http.Request) {
 
 	queryParams := req.URL.Query()
 
-	// Drain and close request body to ensure connection reuse
-	if (req.Body != nil) {
-		_, _ = io.Copy(io.Discard, req.Body)
-		req.Body.Close()
-	}
+	base.DrainAndCloseRequestBody(req)
 
 	//xnames really is an array
 	xnamesReq := queryParams["xname"]
@@ -122,8 +119,7 @@ func PostPowerStatus(w http.ResponseWriter, req *http.Request) {
 	if req.Body != nil {
 		body, err := io.ReadAll(req.Body)
 
-		// Close request body to ensure connection reuse
-		req.Body.Close()
+		base.DrainAndCloseRequestBody(req)
 
 		logger.Log.WithFields(logrus.Fields{"body": string(body)}).Trace("Printing request body")
 

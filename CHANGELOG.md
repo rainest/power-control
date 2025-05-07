@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Update
+
+- Updated image and module dependencies to latest versions
+- Replaced a fair amount of redundant code with reference to new code built
+  into the new hms-base module
+- Update version of Go to v1.24
+- Made several code changes due to upgrade to latest version of Go
+- Fixed jq parsing issue when running local Snyk scans
+
 ### Changes
 
 - Replace mux with chi router
