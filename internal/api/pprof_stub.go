@@ -1,5 +1,6 @@
-// This file contains the code to enable pprof profiling. It is only
-// included in the build when the 'pprof' build tag is set in the Dockerfile.
+// This file contains a stub implementation of the RegisterPProfHandlers()
+// function which is a noop.  It is included in the build by default by
+// way of the 'pprof' build tag not being set in the Dockerfile.
 //
 //go:build !pprof
 
