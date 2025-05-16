@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made several code changes due to upgrade to latest version of Go
 - Fixed jq parsing issue when running local Snyk scans
 
+### Added
+
+- Added support for pprof builds
+
 ### Changes
 
 - Replace mux with chi router
