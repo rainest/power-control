@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ochami
+
+resources:
+- percona.yaml
+
+labels:
+- includeSelectors: false
+  pairs:
+    app.kubernetes.io/version: v2.7.0
+    app.kubernetes.io/part-of: openchami
+    app.kubernetes.io/component: database
+
+configMapGenerator:
+- name: pcs-init-sql
+  files:
+  - pg_single.sql
