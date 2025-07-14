@@ -8,9 +8,6 @@ resources:
 - istio-virtualservice.yaml
 
 labels:
-- includeSelectors: true
-  pairs:
-    app.kubernetes.io/name: ochami-power-control
 - includeSelectors: false
   pairs:
     app.kubernetes.io/version: v2.7.0

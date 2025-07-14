@@ -4,8 +4,19 @@ namespace: ochami
 
 resources:
 - ../base
+- ../db
+# There's no dedicated functionality for this:
+# https://github.com/kubernetes-sigs/kustomize/issues/4938
+# that creates a bit of a conundrum, since we either need to create it elsewhere
+# or have the app labels attached to it.
+- namespace.yaml
 
 labels:
+# Per-instance
 - includeSelectors: true
   pairs:
     app.kubernetes.io/instance: default-power-control
+# Standard
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/name: ochami-power-control
