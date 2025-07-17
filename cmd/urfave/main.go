@@ -3,16 +3,20 @@ package main
 // This packages shows how to use sflags with urfave/cli library.
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"regexp"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"github.com/urfave/sflags"
 	"github.com/urfave/sflags/gen/gcli"
+
+	"github.com/OpenCHAMI/power-control/v2/internal/storage"
 )
 
 type httpConfig struct {
@@ -37,63 +41,45 @@ const (
 	defaultCompletedLifetime = 1440  // Time, in mins, to keep completed records (default 24 hours).
 )
 
-// rootCommand.Flags().StringVar(&pcs.stateManagerServer, "sms-server", defaultSMSServer, "SMS Server")
-// rootCommand.Flags().BoolVar(&pcs.runControl, "run-control", pcs.runControl, "run control loop; false runs API only") //this was a flag useful for dev work
-// rootCommand.Flags().BoolVar(&pcs.hsmLockEnabled, "hsmlock-enabled", true, "Use HSM Locking")                         // This was a flag useful for dev work
-// rootCommand.Flags().BoolVar(&pcs.vaultEnabled, "vault-enabled", true, "Should vault be used for credentials?")
-// rootCommand.Flags().StringVar(&pcs.vaultKeypath, "vault-keypath", "secret/hms-creds",
-// 	"Keypath for Vault credentials.")
-// rootCommand.Flags().IntVar(&pcs.credCacheDuration, "cred-cache-duration", 600,
-// 	"Duration in seconds to cache vault credentials.")
-//
-// rootCommand.Flags().IntVar(&pcs.maxNumCompleted, "max-num-completed", defaultMaxNumCompleted, "Maximum number of completed records to keep.")
-// rootCommand.Flags().IntVar(&pcs.expireTimeMins, "expire-time-mins", defaultExpireTimeMins, "The time, in mins, to keep completed records.")
-//
-// // ETCD flags
-// rootCommand.Flags().BoolVar(&etcd.disableSizeChecks, "etcd-disable-size-checks", false, "Disables checking object size before storing and doing message truncation and paging.")
-// rootCommand.Flags().IntVar(&etcd.pageSize, "etcd-page-size", storage.DefaultEtcdPageSize, "The maximum number of records to put in each etcd entry.")
-// rootCommand.Flags().IntVar(&etcd.maxMessageLength, "etcd-max-transition-message-length", storage.DefaultMaxMessageLen, "The maximum length of messages per task in a transition.")
-// rootCommand.Flags().IntVar(&etcd.maxObjectSize, "etcd-max-object-size", storage.DefaultMaxEtcdObjectSize, "The maximum data size in bytes for objects in etcd.")
-//
-// // JWKS URL flag
-// rootCommand.Flags().StringVar(&jwksURL, "jwks-url", "", "Set the JWKS URL to fetch public key for validation")
-//
-// // Postgres flags
-// "postgres-host", "", postgres.Host, "Postgres host as IP address or name")
-// "postgres-user", "", postgres.User, "Postgres username")
-// "postgres-password", "", postgres.Password, "Postgres password")
-// "postgres-dbname", "", postgres.DBName, "Postgres database name")
-// "postgres-opts", "", postgres.Opts, "Postgres database options")
-// "postgres-port", "", postgres.Port, "Postgres port")
-// "postgres-retry_count", "", postgres.RetryCount, "Number of times to retry connecting to Postgres database before giving up")
-// "postgres-retry_wait", "", postgres.RetryWait, "Seconds to wait between retrying connection to Postgres")
-// "postgres-insecure", "", postgres.Insecure, "Don't enforce certificate authority for Postgres")
+// TRC the root object for urfave/cli and sflags. automatic help output is in the same order as the struct fields.
 
 type config struct {
 	// StateManagerURL and maybe StateManagerLockEnabled are good candidates for shared settings
-	CompletedCount    int    `flag:"max-num-completed"` // bikeshed alternative completed-count
-	CompletedLifetime int    `flag:"expire-time-mins"`  // bikeshed alternative completed-lifetime
-	JWKSURL           string `flag:"jwks-url"`
-	Port              int    `flag:"port p"`
+	CompletedCount    int `flag:"max-num-completed" desc:"Maximum number of completed records to keep."` // bikeshed breaking alternative completed-count
+	CompletedLifetime int `flag:"expire-time-mins" desc:"Minutes to keep completed records."`            // bikeshed breaking alternative completed-lifetime
+	// TRC this is a special case of the CamelCase -> --camel-case rule: all uppercase will be treated as one word, this defaults to --jwksurl
+	JWKSURL string `flag:"jwks-url" desc:"Set the JWKS URL to fetch public key for validation"`
+	Port    int    `flag:"port p" desc:"Service listen port"`
+	// BREAKING runControl is gone. AFAICT it did nothing other than change a log message? it was supposed to only start the API, I think
 
-	Postgres     postgresConfig
 	Vault        vaultConfig
-	StateManager stateManagerConfig
+	StateManager stateManagerConfig `flag:"smd"`
+
+	Postgres postgresConfig
+	Etcd     etcdConfig
+}
+
+type etcdConfig struct {
+	DisableSizeChecks          bool `desc:"Disables checking object size before storing and doing message truncation and paging"`
+	PageSize                   int  `desc:"The maximum number of records to put in each etcd entry"`
+	MaxTransitionMessageLength int  `desc:"The maximum length of messages per task in a transition"`
+	MaxObjectSize              int  `desc:"The maximum data size in bytes for objects in etcd"`
 }
 
 type vaultConfig struct {
-	Enabled                 bool   `flag:"vault-enabled"`
-	KeyPath                 string `flag:"vault-keypath"`
-	CredentialCacheDuration int    `flag:"vault-credential-lifetime"` // BREAKING formerly cred-cache-duration
+	Disabled           bool   `desc:"Disable Vault for credentials"` // BREAKING the default is to have vault enabled, so this bool flips from --vault-enabled to --vault-disabled to actually work
+	KeyPath            string `desc:"Key path for credentials in Vault"`
+	CredentialLifetime int    `desc:"Seconds to cache credentials retrieved from Vault"` // BREAKING formerly cred-cache-duration
 }
 
 type stateManagerConfig struct {
-	URL         string `flag:"smd-url"`  // BREAKING formerly sms-server
-	LockEnabled bool   `flag:"smd-lock"` // BREAKING formerly hsmlock-enabled
+	URL          string `desc:"SMD URL"`                    // BREAKING formerly sms-server
+	LockDisabled bool   `desc:"Use hardware state Locking"` // BREAKING formerly hsmlock-enabled, renamed AND reversed because boolean
 }
 
 type postgresConfig struct {
-	// TRC these
+	// TRC these are _IMPLICIT_: you only need to specify flags if they differ from the variable name.
+	// TRC "CamelCase" automatically converts to --camel-case
 	//Host       string `flag:"postgres-host"`
 	//User       string `flag:"postgres-user"`
 	//Password   string `flag:"postgres-password,hidden"`
@@ -103,64 +89,267 @@ type postgresConfig struct {
 	//RetryCount uint64 `flag:"postgres-retry-count"` // originally using retry_count but w/e unreleased
 	//RetryWait  uint64 `flag:"postgres-retry-wait"`  // ditto retry_wait
 	//Insecure   bool   `flag:"postgres-insecure"`
-	Host                string
-	User                string
-	Password            string `flag:",hidden"`
-	Database            string `flag:"dbname"`
-	PathologicalExample string `flag:"postgres-pathological"`
-	Opts                string
-	Port                uint
-	RetryCount          uint64 // originally using retry_count but w/e unreleased
-	RetryWait           uint64 // ditto retry_wait
-	Insecure            bool
+	Host       string `desc:"Postgres hostname"`
+	User       string `desc:"Postgres username"`
+	Password   string `desc:"Postgres password"`
+	Database   string `desc:"Postgres database name"` // BREAKING but not, dbname originally, but not yet released
+	Opts       string `desc:"Postgres database options"`
+	Port       uint   `desc:"Postgres port"`
+	RetryCount uint64 `desc:"Number of times to retry connecting to Postgres database before giving up"` // originally using retry_count but w/e unreleased
+	RetryWait  uint64 `desc:"Seconds to wait between retrying connection to Postgres"`                   // ditto retry_wait
+	Insecure   bool   `desc:"Disable Postgres TLS validation"`
+	// TRC this is wrong, flags are composed from their parent and automatically get its prefix, this manifests as --postgres-postgres-example
+	ExampleSettingWrong string `flag:"postgres-example"`
+	// TRC this is right
+	ExampleSettingRight string `flag:"example"`
+	// TRC this is just being stupid
+	ExampleSettingWrongButRight string `flag:"~postgres-tricky-example"`
+	// TRC this is overriding the parent prefix
+	ExampleSettingOverride string       `flag:"~override-example"`
+	Nested                 nestedConfig `flag:"nested"`
+}
+
+type nestedConfig struct {
+	// TRC this gets both prefixes, so --postgres-nested-red and POSTGRES_NESTED_RED
+	Red string `flag:"red"`
+	// TRC overrides are absolute, this is --blue and BLUE, not POSTGRES_BLUE
+	Blue string `flag:"~blue"`
+	// TRC you probably shouldn't do this but it may be useful for refactoring struct structure
+	Green string `flag:"~postgres-green"`
+}
+
+// TRC migrateConfig is an alt name since schemaConfig is the original config name, and I'm hacking around demonstrating multiple things at once
+type cmdMigrateConfig struct {
+	SchemaStep       uint   `desc:"Migration step to apply"`
+	SchemaForceStep  uint   `desc:""`
+	SchemaFresh      bool   `desc:"Drop all tables and start fresh"`
+	SchemaMigrations string `desc:"Directory for migration files"`
+}
+
+func DefaultConfig() *config {
+	return &config{
+		Port:              28007,
+		CompletedCount:    20000,
+		CompletedLifetime: 1440,
+		Postgres: postgresConfig{
+			User:     "pcsuser",
+			Database: "pcs",
+			Port:     5437,
+		},
+		Vault: vaultConfig{
+			// TODO this default should change, purge the "HMS" nomenclature from ochami stuff.
+			// IDK if we just have ochami-creds or what, we haven't really covered vault much before.
+			KeyPath:            "secret/hms-creds",
+			CredentialLifetime: 600,
+		},
+		StateManager: stateManagerConfig{
+			URL: "https://api-gw-service-nmn/apis/smd",
+		},
+		Etcd: etcdConfig{
+			PageSize:                   storage.DefaultEtcdPageSize,
+			MaxTransitionMessageLength: storage.DefaultMaxMessageLen,
+			MaxObjectSize:              storage.DefaultMaxEtcdObjectSize,
+		},
+	}
+}
+
+func DefaultMigrateConfig() *cmdMigrateConfig {
+	return &cmdMigrateConfig{
+		SchemaStep: 1,
+	}
 }
 
 func main() {
-	// TRC dunno whether to use consts or just stick things direct in here. original uses consts. ultimately we can't
-	// TRC export them and there's not much reason to not inline them as such
-	cfg := &config{
-		Port:              defaultPort,
-		CompletedCount:    defaultCompletedCount,
-		CompletedLifetime: defaultCompletedLifetime,
-		Postgres: postgresConfig{
-			User:                "pcsuser",
-			Database:            "pcs",
-			Port:                5437,
-			PathologicalExample: "default",
-		},
-		Vault: vaultConfig{
-			Enabled: true, // should this maybe be reversed? IIRC convention is that bools default to false
-		},
-		StateManager: stateManagerConfig{
-			URL: defaultStateManagerURL,
-		},
-	}
+	cfg := DefaultConfig()
 
-	flags, err := gcli.Parse(cfg)
+	baseFlags, err := gcli.ParseV3(cfg, sflags.EnvPrefix("PCS_"))
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
-	cliApp := cli.NewApp()
-	cliApp.Action = func(c *cli.Context) error {
-		return nil
+
+	mig := DefaultMigrateConfig()
+
+	migrateFlags, err := gcli.ParseV3(mig, sflags.EnvPrefix("PCS_"))
+	if err != nil {
+		log.Fatalf("err: %v", err)
 	}
-	cliApp.Flags = flags
-	// print usage
-	err = cliApp.Run([]string{"cliApp", "--help"})
+
+	//cmd.Flags().UintVar(&schema.step, "schema-step", schema.step, "Migration step to apply")
+	//cmd.Flags().IntVar(&schema.forceStep, "schema-force-step", schema.forceStep, "Force migration to a specific step")
+	//cmd.Flags().BoolVar(&schema.fresh, "schema-fresh", schema.fresh, "Drop all tables and start fresh")
+	//cmd.Flags().StringVar(&schema.migrationDir, "schema-migrations", schema.migrationDir, "Directory for migration files")
+
+	cmd := &cli.Command{
+		Name:        "power-control",
+		Usage:       "Run the power-control service",
+		Description: "OpenCHAMI power control service",
+		Action: func(context.Context, *cli.Command) error {
+			return nil
+		},
+		Flags: baseFlags,
+		Commands: []*cli.Command{
+			{
+				Name:  "migrate-postgres",
+				Usage: "Run Postgres database migrations",
+				Flags: []cli.Flag{
+					&cli.UintFlag{
+						Name:    "schema-step",
+						Usage:   "Migration step to apply",
+						Sources: cli.EnvVars("PCS_SCHEMA_STEP"),
+					},
+					// This was originally int but seems like it shouldn't be. It's effectively the same data type
+					// as a non-forced step.
+					&cli.UintFlag{
+						Name:    "schema-force-step",
+						Usage:   "Force migration to a specific step",
+						Sources: cli.EnvVars("PCS_SCHEMA_FORCE_STEP"),
+					},
+					&cli.BoolFlag{
+						Name:    "schema-fresh",
+						Usage:   "Drop all tables and start fresh",
+						Sources: cli.EnvVars("PCS_SCHEMA_FRESH"),
+					},
+					&cli.StringFlag{
+						Name:    "schema-migrations",
+						Usage:   "Directory for migration files",
+						Sources: cli.EnvVars("PCS_SCHEMA_MIGRATIONS"),
+					},
+				},
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					schema := &schemaConfig{}
+					postgres := &storage.PostgresConfig{}
+					migrateSchema(schema, postgres, nil)
+					return nil
+				},
+			},
+			{
+				Name:  "alt-migrate",
+				Usage: "Run Postgres database migrations",
+				Flags: migrateFlags,
+				Action: func(context.Context, *cli.Command) error {
+					return nil
+				},
+			},
+		},
+	}
+
+	//if err := cmd.Run(context.Background(), os.Args); err != nil {
+	//	log.Fatal(err)
+	//}
+
+	//err = cmd.Run(context.Background(), []string{"power-control", "--help"})
+	//if err != nil {
+	//	fmt.Printf("err: %v", err)
+	//}
+	err = cmd.Run(context.Background(), []string{"power-control", "postgres-migrate", "--help"})
 	if err != nil {
 		fmt.Printf("err: %v", err)
 	}
-	err = cliApp.Run([]string{
-		"cliApp",
+	err = cmd.Run(context.Background(), []string{"power-control", "alt-migrate", "--help"})
+	if err != nil {
+		fmt.Printf("err: %v", err)
+	}
+	err = cmd.Run(context.Background(), []string{
+		"power-control",
+		"alt-migrate",
 		"--postgres-host", "postgres.example",
 		"--postgres-password", "postgres.example",
-		"--postgres-dbname", "pcsdb",
-		// TRC WRONG. this goes nowhere
-		"--postgres-pathological", "poof",
-		// TRC RIGHT.
-		"--postgres-postgres-pathological", "hiiii",
+		"--postgres-database", "pcsdb",
+		// TRC booleans are simply present or not, so they MUST default to false. you CANNOT use --postgres-insecure false
+		"--postgres-insecure",
+		"--postgres-retry-count", "2000",
+		"--postgres-example", "right",
+		"--postgres-postgres-example", "wrong",
+		"--postgres-tricky-example", "wronger",
+		"--override-example", "trickier",
+		"--postgres-nested-red", "red",
+		"--blue", "blue",
+		"--postgres-green", "green",
+		"--schema-step", "5",
 	})
 	if err != nil {
+		// TRC note that configuration parsing proceeds up to, but not past the first error. if you supply an argument
+		// TRC that does not exist, you'll get every _prior_ argument into the struct, but nothing else after.
+		// TRC this is mildly confusing since this example does not fatally exit and still prints the struct after errors,
+		// TRC but in an actual app it'll presumably just fatal immediately.
+		fmt.Printf("err: %v", err)
+	}
+	fmt.Printf("\ncfg: %s\n", spew.Sdump(cfg))
+	fmt.Printf("\ncfg: %s\n", spew.Sdump(mig))
+}
+
+func exampleMain() {
+	// TRC dunno whether to use consts or just stick things direct in here. original uses consts. ultimately we can't
+	// TRC export them and there's not much reason to not inline them as such
+	cfg := &config{
+		Port:              28007,
+		CompletedCount:    20000,
+		CompletedLifetime: 1440,
+		Postgres: postgresConfig{
+			User:     "pcsuser",
+			Database: "pcs",
+			Port:     5437,
+		},
+		Vault: vaultConfig{
+			// TODO this default should change, purge the "HMS" nomenclature from ochami stuff.
+			// IDK if we just have ochami-creds or what, we haven't really covered vault much before.
+			KeyPath:            "secret/hms-creds",
+			CredentialLifetime: 600,
+		},
+		StateManager: stateManagerConfig{
+			URL: "https://api-gw-service-nmn/apis/smd",
+		},
+		Etcd: etcdConfig{
+			PageSize:                   storage.DefaultEtcdPageSize,
+			MaxTransitionMessageLength: storage.DefaultMaxMessageLen,
+			MaxObjectSize:              storage.DefaultMaxEtcdObjectSize,
+		},
+	}
+
+	cmd := &cli.Command{
+		Name:        "power-control",
+		Usage:       "control power",
+		Description: "OpenCHAMI power control service",
+		Action: func(context.Context, *cli.Command) error {
+			return nil
+		},
+	}
+
+	err := gcli.ParseToV3(cfg, &cmd.Flags, sflags.EnvPrefix("PCS_"))
+	if err != nil {
+		log.Fatalf("err: %v", err)
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
+
+	// print usage
+	err = cmd.Run(context.Background(), []string{"power-control", "--help"})
+	if err != nil {
+		fmt.Printf("err: %v", err)
+	}
+	err = cmd.Run(context.Background(), []string{
+		"power-control",
+		"--postgres-host", "postgres.example",
+		"--postgres-password", "postgres.example",
+		"--postgres-database", "pcsdb",
+		// TRC booleans are simply present or not, so they MUST default to false. you CANNOT use --postgres-insecure false
+		"--postgres-insecure",
+		"--postgres-retry-count", "2000",
+		"--postgres-example", "right",
+		"--postgres-postgres-example", "wrong",
+		"--postgres-tricky-example", "wronger",
+		"--override-example", "trickier",
+		"--postgres-nested-red", "red",
+		"--blue", "blue",
+		"--postgres-green", "green",
+	})
+	if err != nil {
+		// TRC note that configuration parsing proceeds up to, but not past the first error. if you supply an argument
+		// TRC that does not exist, you'll get every _prior_ argument into the struct, but nothing else after.
+		// TRC this is mildly confusing since this example does not fatally exit and still prints the struct after errors,
+		// TRC but in an actual app it'll presumably just fatal immediately.
 		fmt.Printf("err: %v", err)
 	}
 	fmt.Printf("\ncfg: %s\n", spew.Sdump(cfg))
