@@ -119,6 +119,10 @@ type nestedConfig struct {
 }
 
 // TRC migrateConfig is an alt name since schemaConfig is the original config name, and I'm hacking around demonstrating multiple things at once
+// TRC IDK if there's a better way to ensure subcommand flags share a common prefix (or if we just don't care). since
+// TRC subcommands inherit their parents flags (at least when sflags handles them--you can set "Local: false" to not
+// TRC propagate) you _don't_ want these in a struct with base config as anon and additional flags off a keyed field.
+// TRC if you want a standard prefix, these need to have it in the var name or flag tag
 type cmdMigrateConfig struct {
 	SchemaStep       uint   `desc:"Migration step to apply"`
 	SchemaForceStep  uint   `desc:""`
@@ -173,11 +177,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
-
-	//cmd.Flags().UintVar(&schema.step, "schema-step", schema.step, "Migration step to apply")
-	//cmd.Flags().IntVar(&schema.forceStep, "schema-force-step", schema.forceStep, "Force migration to a specific step")
-	//cmd.Flags().BoolVar(&schema.fresh, "schema-fresh", schema.fresh, "Drop all tables and start fresh")
-	//cmd.Flags().StringVar(&schema.migrationDir, "schema-migrations", schema.migrationDir, "Directory for migration files")
 
 	cmd := &cli.Command{
 		Name:        "power-control",
@@ -241,10 +240,6 @@ func main() {
 	//if err != nil {
 	//	fmt.Printf("err: %v", err)
 	//}
-	err = cmd.Run(context.Background(), []string{"power-control", "postgres-migrate", "--help"})
-	if err != nil {
-		fmt.Printf("err: %v", err)
-	}
 	err = cmd.Run(context.Background(), []string{"power-control", "alt-migrate", "--help"})
 	if err != nil {
 		fmt.Printf("err: %v", err)
