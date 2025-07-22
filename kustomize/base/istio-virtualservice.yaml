@@ -1,3 +1,6 @@
+# TODO Offhand IDK if there's a way to handle CRs that _might_ be available other than just
+# letting them fail. https://stackoverflow.com/questions/64899665/exclude-resource-in-kustomization-yaml
+# has means to exclude them at the parent kustomization level 
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService

@@ -3,7 +3,8 @@ kind: Kustomization
 namespace: ochami
 
 resources:
-- percona.yaml
+#- percona.yaml
+- cnpg.yaml
 
 labels:
 - includeSelectors: false
@@ -12,7 +13,22 @@ labels:
     app.kubernetes.io/part-of: openchami
     app.kubernetes.io/component: database
 
-configMapGenerator:
-- name: pcs-init-sql
-  files:
-  - pg_single.sql
+## percona stuff
+#configMapGenerator:
+#- name: pcs-init-sql
+#  files:
+#  - pg_single.sql
+
+# https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kustomize/
+# AFAIK there's no way to have this random if not exists as opposed to a static value
+# in deploy config.
+# TODO probably default to a file? IDK there doesnt appear to be much in kustomize itself
+# and you probably need CD to do "insert from vault" magic
+# TODO the generator also adds random names onto the ends of secret resources
+# it renames _some_ references but not CRD references, and only references under the generator,
+# so this would need to go in app instead of DB to be referenced from the deployment
+#secretGenerator:
+#- name: cluster-ochami-pcs
+#  literals:
+#  - username=pcs
+#  - password=p0wer!

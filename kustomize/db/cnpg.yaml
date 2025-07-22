@@ -9,11 +9,23 @@ spec:
   
   storage:
     size: 5Gi
+  managed:
+    roles:
+    - name: pcs
+      ensure: present
+      comment: power-control
+      login: true
+      superuser: false
+      passwordSecret:
+        name: cluster-ochami-pcs
+      inRoles:
+        - pg_monitor
+        - pg_signal_backend
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
-  name: cluster-example-one
+  name: pcsdb
 spec:
   name: pcsdb
   owner: pcs
@@ -22,3 +34,11 @@ spec:
   schemas:
   - name: pcsdb
     owner: pcs
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-ochami-pcs
+stringData:
+  username: pcs
+  password: p0wer!

@@ -6,9 +6,15 @@ resources:
 - deployment.yaml
 - service.yaml
 - istio-virtualservice.yaml
+- init-job.yaml
 
 labels:
 - includeSelectors: false
   pairs:
     app.kubernetes.io/version: v2.7.0
     app.kubernetes.io/part-of: openchami
+
+images:
+- name: power-control-stub
+  newName: ghcr.io/rainest/pcs
+  newTag: v2.8.3
