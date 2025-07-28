@@ -13,6 +13,11 @@ labels:
   pairs:
     app.kubernetes.io/version: v2.7.0
     app.kubernetes.io/part-of: openchami
+# This exists at the app/ level also; I need to better understand the interactions between multiple
+# levels of labels. We need something here to allow independent renders of base/
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/name: ochami-power-control
 
 images:
 - name: power-control-stub
