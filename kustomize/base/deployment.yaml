@@ -42,6 +42,7 @@ spec:
             value: LOCAL
           - name: SERVICE_RESERVATION_VERBOSITY
             value: ERROR
+          # TODO this appears unused. Dockerfiles have it, but it's absent from code
           - name: HSMLOCK_ENABLED
             value: "true"
           - name: STORAGE
