@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/component: power-service
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     rollingUpdate:
       maxUnavailable: 50%
@@ -116,13 +116,3 @@ spec:
       #  - configMap:
       #      name: cray-configmap-ca-public-key
       #    name: cray-pki-cacert-vol
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/name
-                operator: In
-                values:
-                - ochami-power-control
-            topologyKey: kubernetes.io/hostname
