@@ -281,7 +281,7 @@ func runPCS(pcs *pcsConfig, etcd *etcdConfig, postgres *storage.PostgresConfig) 
 	//TODO: there should be a Ping() to insure HSM is alive
 
 	//Vault CONFIGURATION
-	tmpCS := &credstore.VAULTv0{}
+	tmpCS := &credstore.MockStore{Username: "admin", Password: "password"}
 
 	CS = tmpCS
 	if pcs.vaultEnabled {
