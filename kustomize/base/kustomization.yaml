@@ -21,5 +21,5 @@ labels:
 
 images:
 - name: power-control-stub
-  newName: ghcr.io/rainest/pcs
-  newTag: v2.8.3
+  newName: docker.io/traines/power-control
+  newTag: v1.0.1-debug

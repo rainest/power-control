@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ochami
+namespace: mgmt
 
 resources:
 - ../base
@@ -9,7 +9,7 @@ resources:
 # https://github.com/kubernetes-sigs/kustomize/issues/4938
 # that creates a bit of a conundrum, since we either need to create it elsewhere
 # or have the app labels attached to it.
-- namespace.yaml
+#- namespace.yaml
 
 labels:
 # Per-instance
