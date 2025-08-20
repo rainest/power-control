@@ -280,8 +280,16 @@ func runPCS(pcs *pcsConfig, etcd *etcdConfig, postgres *storage.PostgresConfig) 
 	HSM.Init(&hsmGlob)
 	//TODO: there should be a Ping() to insure HSM is alive
 
-	//Vault CONFIGURATION
-	tmpCS := &credstore.MockStore{Username: "admin", Password: "password"}
+	// Fake Vault credentials
+	mockUser := "admin"
+	if user, exists := os.LookupEnv("PCS_DEBUG_REDFISH_USER"); exists {
+		mockUser = user
+	}
+	mockPass := "password"
+	if pass, exists := os.LookupEnv("PCS_DEBUG_REDFISH_PASSWORD"); exists {
+		mockPass = pass
+	}
+	tmpCS := &credstore.MockStore{Username: mockUser, Password: mockPass}
 
 	CS = tmpCS
 	if pcs.vaultEnabled {
