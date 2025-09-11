@@ -7,8 +7,9 @@ on:
       devel:
         description: 'Produce and push a development Docker image'
         required: true
-        type: boolean
-        default: false
+        # types are hard vov https://github.com/actions/runner/issues/2238
+        type: string
+        default: "false"
       ref:
         description: 'The commit hash for development builds'
         type: string
