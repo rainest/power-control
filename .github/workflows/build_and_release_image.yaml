@@ -3,6 +3,16 @@ run-name: GoReleaser ${{ startsWith(github.ref, 'refs/tags/v') && 'Release' || '
 
 on:
   workflow_dispatch:
+    inputs:
+      devel:
+        description: 'Produce and push a development Docker image'
+        required: true
+        type: boolean
+        default: false
+      ref:
+        description: 'The commit hash for development builds'
+        type: string
+        required: true
   pull_request:
   push:
     tags:
