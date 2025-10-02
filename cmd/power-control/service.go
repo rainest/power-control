@@ -43,7 +43,7 @@ const (
 
 const (
 	dfltMaxHTTPRetries = 5
-	dfltMaxHTTPTimeout = 60
+	dfltMaxHTTPTimeout = 120
 	dfltMaxHTTPBackoff = 8
 )
 
