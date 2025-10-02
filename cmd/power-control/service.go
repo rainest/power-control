@@ -150,23 +150,13 @@ func runPCS(pcs *pcsConfig, etcd *etcdConfig, postgres *storage.PostgresConfig) 
 
 	envstr = os.Getenv("TRS_IMPLEMENTATION")
 
-	if envstr == "REMOTE" {
-		workerSec := &trsapi.TRSHTTPRemote{}
-		workerSec.Logger = trsLogger
-		workerInsec := &trsapi.TRSHTTPRemote{}
-		workerInsec.Logger = trsLogger
-		TLOC_rf = workerSec
-		TLOC_svc = workerInsec
-		logger.Log.Infof("Using TRS_IMPLEMENTATION: REMOTE")
-	} else {
-		workerSec := &trsapi.TRSHTTPLocal{}
-		workerSec.Logger = trsLogger
-		workerInsec := &trsapi.TRSHTTPLocal{}
-		workerInsec.Logger = trsLogger
-		TLOC_rf = workerSec
-		TLOC_svc = workerInsec
-		logger.Log.Infof("Using TRS_IMPLEMENTATION: LOCAL")
-	}
+	workerSec := &trsapi.TRSHTTPLocal{}
+	workerSec.Logger = trsLogger
+	workerInsec := &trsapi.TRSHTTPLocal{}
+	workerInsec.Logger = trsLogger
+	TLOC_rf = workerSec
+	TLOC_svc = workerInsec
+	logger.Log.Infof("Using TRS_IMPLEMENTATION: LOCAL")
 
 	//Set up TRS TLOCs and HTTP clients, all insecure to start with
 
