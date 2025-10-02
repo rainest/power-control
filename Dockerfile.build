@@ -19,15 +19,6 @@ RUN printf "Building for TARGETPLATFORM=${TARGETPLATFORM}" \
 
 WORKDIR /workspace
 
-# Use cache mounts to cache Go dependencies and bind mounts to avoid unnecessary
-# layers when using COPY instructions for go.mod and go.sum.
-# https://docs.docker.com/build/guide/mounts/
-RUN --mount=type=cache,target=$GOPATH/pkg/mod \
-    --mount=type=cache,target=$GOCACHE \
-    --mount=type=bind,source=go.sum,target=go.sum \
-    --mount=type=bind,source=go.mod,target=go.mod \
-    go mod download -x
-
 # TODO
 # We currently have a lot of variance in directory structure.
 # This is annoying for Dockerfile design; we can't just consistently
@@ -39,6 +30,8 @@ RUN --mount=type=cache,target=$GOPATH/pkg/mod \
 COPY cmd cmd
 COPY api api
 COPY internal internal
+COPY go.mod go.mod
+COPY go.sum go.sum
 
 # TODO
 # These are more for the final image. Unsure if we need them for build.
@@ -54,25 +47,18 @@ ARG REPO_INFO
 
 RUN mkdir bin
 
+# TODO this should work to speed up builds on a host that already has packages, but it's
+# inexplicably causing "go build" to complain that the cmd/power-control dir doesn't exist
+#--mount=type=cache,target=$GOPATH/pkg/mod \
+#--mount=type=cache,target=$GOCACHE \
+# TODO attempting to CGO_ENABLED=0 here makes module downloads angry about deps of deps, e.g.
+# /home/rainest/go/pkg/mod/github.com/!cray-!h!p!e/hms-trs-kafkalib/v2@v2.0.2/pkg/trs-kafkalib/library.go:39:24: undefined: kafka.Message
+# not sure what's special about that lib--it is vendored in hms-trs-kafkalib, but idk why vendored dep handling
+# would break _only_ when not using CGO
 # TODO
-#  > [builder 14/14] RUN ... GOOS=linux GOARCH="amd64" GO111MODULE=on go build -C cmd/power-control -v -o bin/power-control:
-# 0.058 go: chdir cmd/power-control: no such file or directory
-
-RUN --mount=type=bind,source=go.sum,target=go.sum \
-    --mount=type=bind,source=go.mod,target=go.mod \
-	# TODO this should work to speed up builds on a host that already has packages, but it's
-	# inexplicably causing "go build" to complain that the cmd/power-control dir doesn't exist
-    #--mount=type=cache,target=$GOPATH/pkg/mod \
-    #--mount=type=cache,target=$GOCACHE \
-	# TODO attempting to CGO_ENABLED=0 here makes module downloads angry about deps of deps, e.g.
-	# /home/rainest/go/pkg/mod/github.com/!cray-!h!p!e/hms-trs-kafkalib/v2@v2.0.2/pkg/trs-kafkalib/library.go:39:24: undefined: kafka.Message
-	# not sure what's special about that lib--it is vendored in hms-trs-kafkalib, but idk why vendored dep handling
-	# would break _only_ when not using CGO
-	# TODO
-	# Debug symbols. Somehow make this optional so that debug and normal can share builders
-    #-gcflags=all="-N -l" \
-    GOOS=linux GOARCH="${TARGETARCH}" GO111MODULE=on \
-	go build -v -o bin/power-control ./cmd/power-control 
+# Debug symbols. Somehow make this optional so that debug and normal can share builders
+#-gcflags=all="-N -l" \
+RUN GOOS=linux GOARCH="${TARGETARCH}" GO111MODULE=on go build -v -o bin/power-control ./cmd/power-control
 
 ### release image
 # TODO seems kinda off that we don't pin wolfi or tini, but whatever
