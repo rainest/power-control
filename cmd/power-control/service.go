@@ -148,8 +148,6 @@ func runPCS(pcs *pcsConfig, etcd *etcdConfig, postgres *storage.PostgresConfig) 
 	trsLogger.SetLevel(logger.Log.GetLevel())
 	trsLogger.SetReportCaller(true)
 
-	envstr = os.Getenv("TRS_IMPLEMENTATION")
-
 	workerSec := &trsapi.TRSHTTPLocal{}
 	workerSec.Logger = trsLogger
 	workerInsec := &trsapi.TRSHTTPLocal{}

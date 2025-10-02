@@ -337,7 +337,6 @@ services:
       - VAULT_SKIP_VERIFY=true
       - VAULT_ENABLED=true
       - LOG_LEVEL=DEBUG
-      - TRS_IMPLEMENTATION=LOCAL
       - HSMLOCK_ENABLED=true
       - STORAGE=ETCD
       - ETCD_HOST=etcd
