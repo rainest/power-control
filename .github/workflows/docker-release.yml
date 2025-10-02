@@ -93,7 +93,7 @@ jobs:
           file: Dockerfile.build
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-          target: builder # TODO Dockerfile needs to match
+          target: builder
           platforms: linux/amd64
           build-args: |
             TAG=${{ steps.meta.outputs.version }}
@@ -116,7 +116,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          target: distroless # TODO needs update
+          target: main
           platforms: linux/amd64, linux/arm64
           build-args: |
             TAG=${{ steps.meta.outputs.version }}

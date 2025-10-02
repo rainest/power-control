@@ -62,7 +62,7 @@ RUN GOOS=linux GOARCH="${TARGETARCH}" GO111MODULE=on go build -v -o bin/power-co
 
 ### release image
 # TODO seems kinda off that we don't pin wolfi or tini, but whatever
-FROM chainguard/wolfi-base:latest
+FROM chainguard/wolfi-base:latest AS main
 
 RUN set -ex \
     && apk update \
