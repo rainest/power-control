@@ -1,0 +1,92 @@
+### builder
+# Build the binary
+# TODO this needs to match go.mod. Unsure how they can be
+# kept in sync.
+FROM --platform=$BUILDPLATFORM golang:1.24.0 AS builder
+
+ARG GOPATH
+ARG GOCACHE
+
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN printf "Building for TARGETPLATFORM=${TARGETPLATFORM}" \
+    && printf ", TARGETARCH=${TARGETARCH}" \
+    && printf ", TARGETOS=${TARGETOS}" \
+    && printf ", TARGETVARIANT=${TARGETVARIANT} \n" \
+    && printf "With 'uname -s': $(uname -s) and 'uname -m': $(uname -m)"
+
+WORKDIR /workspace
+
+# Use cache mounts to cache Go dependencies and bind mounts to avoid unnecessary
+# layers when using COPY instructions for go.mod and go.sum.
+# https://docs.docker.com/build/guide/mounts/
+RUN --mount=type=cache,target=$GOPATH/pkg/mod \
+    --mount=type=cache,target=$GOCACHE \
+    --mount=type=bind,source=go.sum,target=go.sum \
+    --mount=type=bind,source=go.mod,target=go.mod \
+    go mod download -x
+
+# TODO
+# We currently have a lot of variance in directory structure.
+# This is annoying for Dockerfile design; we can't just consistently
+# copy the same set of files. Enforcing pkg/ and internal/ only across
+# the board would maybe help.
+# Original also had this copying to GOPATH, e.g.
+# COPY cmd $GOPATH/src/github.com/OpenCHAMI/power-control/v2/cmd
+# I've encountered enough Dockerfiles that just copy it to workdir
+COPY cmd cmd
+COPY api api
+COPY internal internal
+
+# TODO
+# These are more for the final image. Unsure if we need them for build.
+COPY configs configs
+COPY scripts scripts
+COPY migrations migrations
+
+# Build
+# TODO goreleaser has a bunch of provenance args this isn't currently handling
+ARG TAG
+ARG COMMIT
+ARG REPO_INFO
+
+RUN mkdir bin
+
+# Use cache mounts to cache Go dependencies and bind mounts to avoid unnecessary
+# layers when using COPY instructions for go.mod and go.sum.
+# https://docs.docker.com/build/guide/mounts/
+# TODO 
+RUN --mount=type=cache,target=$GOPATH/pkg/mod \
+    --mount=type=cache,target=$GOCACHE \
+    --mount=type=bind,source=go.sum,target=go.sum \
+    --mount=type=bind,source=go.mod,target=go.mod \
+    CGO_ENABLED=0 GOOS=linux GOARCH="${TARGETARCH}" GO111MODULE=on \
+	go build -C cmd/power-control -v \
+	# TODO
+	# Debug symbols. Somehow make this optional so that debug and normal can share builders
+    #-gcflags=all="-N -l" \
+    -o bin/power-control
+
+### release image
+# TODO seems kinda off that we don't pin wolfi or tini, but whatever
+FROM chainguard/wolfi-base:latest
+
+RUN set -ex \
+    && apk update \
+    && apk add --no-cache tini \
+    && rm -rf /var/cache/apk/*  \
+    && rm -rf /tmp/*
+
+WORKDIR /
+COPY --from=builder power-control /usr/local/bin/
+COPY configs configs
+COPY migrations migrations
+
+#nobody 65534:65534
+USER 65534:65534
+
+CMD /usr/local/bin/power-control
+
+ENTRYPOINT ["/sbin/tini", "--"]
