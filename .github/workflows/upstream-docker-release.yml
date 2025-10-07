@@ -25,5 +25,5 @@ jobs:
     uses: rainest/oc-github-actions/.github/workflows/docker-build-release.yml@a167d53487d8a711678541594fd23cae807fdd4b
     with:
       fetch-depth: 1
-      registry-name: ghcr.io/openchami/pcs
+      registry-name: ghcr.io/rainest/pcs
       cgo-enabled: true
