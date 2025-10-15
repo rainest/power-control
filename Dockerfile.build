@@ -11,6 +11,8 @@ ARG TARGETPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
 
+ARG CC
+
 RUN printf "Building for TARGETPLATFORM=${TARGETPLATFORM}" \
     && printf ", TARGETARCH=${TARGETARCH}" \
     && printf ", TARGETOS=${TARGETOS}" \
@@ -55,7 +57,8 @@ RUN mkdir bin
 # TODO
 # Debug symbols. Somehow make this optional so that debug and normal can share builders
 #-gcflags=all="-N -l" \
-RUN CGO_ENABLED="${CGO_ENABLED}" GOOS=linux GOARCH="${TARGETARCH}" GO111MODULE=on go build -v -o bin/power-control ./cmd/power-control
+# CC=aarch64-linux-gnu-gcc fixes this IF ON ARM only but doing that is hard https://forums.docker.com/t/platform-specific-run-statements-in-dockerfile/136670
+RUN CGO_ENABLED="${CGO_ENABLED}" GOOS=linux GOARCH="${TARGETARCH}" CC="${CC}" GO111MODULE=on go build -v -o bin/power-control ./cmd/power-control
 
 ### release image
 # TODO seems kinda off that we don't pin wolfi or tini, but whatever

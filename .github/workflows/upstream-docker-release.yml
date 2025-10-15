@@ -22,8 +22,18 @@ jobs:
   image:
     name: Build Image
     # TODO: Switch to openchami tag once tagged
-    uses: rainest/oc-github-actions/.github/workflows/docker-build-release.yml@a167d53487d8a711678541594fd23cae807fdd4b
+    uses: rainest/oc-github-actions/.github/workflows/docker-build-release.yml@3367f277752872610804ea799b56fe6910263413
     with:
       fetch-depth: 1
       registry-name: ghcr.io/rainest/pcs
       cgo-enabled: true
+      platforms: "linux/amd64"
+    name: Build ARM Image
+    # TODO: Switch to openchami tag once tagged
+    uses: rainest/oc-github-actions/.github/workflows/docker-build-release.yml@3367f277752872610804ea799b56fe6910263413
+    with:
+      fetch-depth: 1
+      registry-name: ghcr.io/rainest/pcs
+      cgo-enabled: true
+      cc: "aarch64-linux-gnu-gcc"
+      platforms: "linux/arm64"
