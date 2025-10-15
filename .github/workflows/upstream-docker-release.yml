@@ -28,7 +28,7 @@ jobs:
       registry-name: ghcr.io/rainest/pcs
       cgo-enabled: true
       platforms: "linux/amd64"
-   image-arm:
+  image_arm:
     name: Build ARM Image
     # TODO: Switch to openchami tag once tagged
     uses: rainest/oc-github-actions/.github/workflows/docker-build-release.yml@3367f277752872610804ea799b56fe6910263413
