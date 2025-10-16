@@ -1,0 +1,39 @@
+name: Build images
+# TODO probably going to be a call input. Either tag or PR name
+run-name: Build images
+
+on:
+  pull_request:
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request
+    # and https://docs.github.com/en/webhooks/webhook-events-and-payloads?actionType=synchronize#pull_request
+    # can probably combine with a caller to filter on label following
+    # https://stackoverflow.com/questions/62325286/run-github-actions-when-pull-requests-have-a-specific-label
+    types: [opened, synchronize]
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+
+permissions: write-all # Necessary for the generate-build-provenance action with containers
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+    - name: Parse semver string
+      id: semver_parser
+      uses: booxmedialtd/ws-action-parse-semver@v1.4.7
+      with:
+        input_string: ${{ github.event.ref }}
+        #input_string: 'refs/tags/v1.2.3'
+        version_extractor_regex: 'refs/tags/v(.*)$'
+    - uses: ncipollo/release-action@v1.18.0
+      with:
+        # by default this will use the tag push tag as the tag and name
+        # if we want to trigger tagging from the workflow, "tag" and "commit"
+        # need to be set to create a new one
+        prerelease: ${{ steps.semver_parser.outputs.prerelease != '' }}
