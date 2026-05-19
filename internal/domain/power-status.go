@@ -363,9 +363,17 @@ func updateComponentMap() error {
 		case xnametypes.CDUMgmtSwitch:
 			fallthrough
 		case xnametypes.CabinetPDUPowerConnector:
-			_, ok := hwStateMap[v.BaseData.ID]
-			if !ok {
-				//New component.
+			existing, ok := hwStateMap[v.BaseData.ID]
+			if ok {
+				// Refresh HSM metadata in place so late discovery updates
+				// populate entries created before ComponentEndpoints existed
+				existing.HSMData.RfFQDN = v.RfFQDN
+				existing.HSMData.PowerStatusURI = v.PowerStatusURI
+				existing.HSMData.PowerActionURI = v.PowerActionURI
+				existing.HSMData.PowerCapURI = v.PowerCapURI
+				existing.PSComp.SupportedPowerTransitions = toPCSPowerActions(v.AllowableActions)
+			} else {
+				// New component.
 				newComp := componentPowerInfo{}
 				newComp.PSComp.XName = v.BaseData.ID
 				newComp.PSComp.PowerState = pcsmodel.PowerStateFilter_Undefined.String()
