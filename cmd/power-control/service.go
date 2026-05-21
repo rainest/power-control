@@ -12,7 +12,7 @@ import (
 
 	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
-	trsapi "github.com/Cray-HPE/hms-trs-app-api/v3/pkg/trs_http_api"
+	trsapi "github.com/rainest/hms-trs-app-api/v3/pkg/trs_http_api"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
@@ -173,23 +173,13 @@ func runPCS(pcs *pcsConfig, etcd *etcdConfig, postgres *storage.PostgresConfig, 
 
 	envstr = os.Getenv("TRS_IMPLEMENTATION")
 
-	if envstr == "REMOTE" {
-		workerSec := &trsapi.TRSHTTPRemote{}
-		workerSec.Logger = trsLogger
-		workerInsec := &trsapi.TRSHTTPRemote{}
-		workerInsec.Logger = trsLogger
-		TLOC_rf = workerSec
-		TLOC_svc = workerInsec
-		logger.Log.Infof("Using TRS_IMPLEMENTATION: REMOTE")
-	} else {
-		workerSec := &trsapi.TRSHTTPLocal{}
-		workerSec.Logger = trsLogger
-		workerInsec := &trsapi.TRSHTTPLocal{}
-		workerInsec.Logger = trsLogger
-		TLOC_rf = workerSec
-		TLOC_svc = workerInsec
-		logger.Log.Infof("Using TRS_IMPLEMENTATION: LOCAL")
-	}
+	workerSec := &trsapi.TRSHTTPLocal{}
+	workerSec.Logger = trsLogger
+	workerInsec := &trsapi.TRSHTTPLocal{}
+	workerInsec.Logger = trsLogger
+	TLOC_rf = workerSec
+	TLOC_svc = workerInsec
+	logger.Log.Infof("Using TRS_IMPLEMENTATION: LOCAL")
 
 	//Set up TRS TLOCs and HTTP clients, all insecure to start with
 
