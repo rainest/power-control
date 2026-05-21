@@ -26,7 +26,7 @@ jobs:
     uses: OpenCHAMI/github-actions/.github/workflows/docker-build-release.yml@v3.3
     with:
       fetch-depth: 1
-      registry-name: ghcr.io/openchami/pcs
+      registry-name: ghcr.io/rainest/pcs
       cgo-enabled: 1
       platforms: "linux/amd64"
       docker-file: "Dockerfile.build"
@@ -35,7 +35,7 @@ jobs:
     uses: OpenCHAMI/github-actions/.github/workflows/docker-build-release.yml@v3.3
     with:
       fetch-depth: 1
-      registry-name: ghcr.io/openchami/pcs
+      registry-name: ghcr.io/rainest/pcs
       cgo-enabled: 1
       additional-env-vars: |
         CC=aarch64-linux-gnu-gcc
