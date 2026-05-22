@@ -28,5 +28,6 @@ jobs:
       fetch-depth: 1
       registry-name: ghcr.io/rainest/pcs
       cgo-enabled: 1
-      platforms: "linux/amd64,linux/arm64"
+      #platforms: "linux/amd64,linux/arm64"
+      platforms: "linux/amd64"
       docker-file: "Dockerfile.build"
