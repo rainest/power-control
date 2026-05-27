@@ -65,7 +65,6 @@ func (tloc *TRSHTTPLocal) Init(serviceName string, logger *logrus.Logger) error 
 	} else {
 		tloc.Logger = logrus.New()
 	}
-	//wrapperLogger = tloc.Logger	// only uncomment if debugging wrapper issues
 
 	tloc.ctx, tloc.ctxCancelFunc = context.WithCancel(context.Background())
 
@@ -212,8 +211,6 @@ func (c *trsRoundTripper) CloseIdleConnections() {
 	if c.skipCloseCount > 0 {
 		c.skipCloseCount--
 
-		//wrapperLogger.Errorf("CloseIdleConnections: skipCloseCount now %v", c.skipCloseCount)
-
 		if c.skipCloseCount == 0 {
 			// Mark the time the counter last reached zero
 			c.timeLastClosedOrReachedZeroCloseCount = time.Now()
@@ -226,13 +223,9 @@ func (c *trsRoundTripper) CloseIdleConnections() {
 
 			c.skipCloseCount = 0
 
-			//wrapperLogger.Errorf("CloseIdleConnections: skipCloseCount reset due to expired time")
-
 			// Time will be marked below when we close idle connections
 		} else {
 			c.skipCloseMutex.Unlock()
-
-			//wrapperLogger.Errorf("CloseIdleConnections: returning without closing idle connections")
 
 			return
 		}
@@ -244,14 +237,11 @@ func (c *trsRoundTripper) CloseIdleConnections() {
 		// Nothing to do so release mutex
 		c.skipCloseMutex.Unlock()
 
-		//wrapperLogger.Errorf("CloseIdleConnections: no lower closeIdleConnectionsFn() to call")
 	} else {
 		// Mark the time of this call to close connections
 		c.timeLastClosedOrReachedZeroCloseCount = time.Now()
 
 		c.skipCloseMutex.Unlock()
-
-		//wrapperLogger.Errorf("CloseIdleConnections: calling lower closeIdleConnectionsFn()")
 
 		// Call next level down
 		c.closeIdleConnectionsFn()
@@ -286,7 +276,6 @@ type retryKey string // avoids compiler warning
 var trsRetryCountKey retryKey = "trsRetryCount"
 
 func (c *trsRoundTripper) trsCheckRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	//wrapperLogger.Errorf("trsCheckRetry: err=%v errType=%T", err, err)
 
 	// Skip a retry for this request if it hit one of these specific timeouts
 
@@ -299,8 +288,6 @@ func (c *trsRoundTripper) trsCheckRetry(ctx context.Context, resp *http.Response
 
 			c.skipCloseMutex.Unlock()
 
-			//wrapperLogger.Errorf("trsCheckRetry: skipCloseCount now %v (http timeout)", c.skipCloseCount)
-
 			// retryablehttp will close any response bodies on retry skip + error
 
 			return false, err // skip it
@@ -311,8 +298,6 @@ func (c *trsRoundTripper) trsCheckRetry(ctx context.Context, resp *http.Response
 			c.skipCloseCount++
 
 			c.skipCloseMutex.Unlock()
-
-			//wrapperLogger.Errorf("trsCheckRetry: skipCloseCount now %v (ctx timeout)", c.skipCloseCount)
 
 			// retryablehttp will close any response bodies on retry skip + error
 
@@ -339,13 +324,10 @@ func (c *trsRoundTripper) trsCheckRetry(ctx context.Context, resp *http.Response
 
 		c.skipCloseMutex.Unlock()
 
-		//wrapperLogger.Errorf("trsCheckRetry: deferring to DefaultRetryPolicy() for this error")
 	}
 
 	// If none of the above, delegate retry check to retryablehttp
 	shouldRetry, defaultRPErr := retryablehttp.DefaultRetryPolicy(ctx, resp, err)
-
-	//wrapperLogger.Errorf("trsCheckRetry: DefaultRetryPolicy: shouldRetry=%v", shouldRetry)
 
 	// Determine if we should override DefaultRetryPolicy()'s opinion
 	if shouldRetry {
@@ -354,8 +336,6 @@ func (c *trsRoundTripper) trsCheckRetry(ctx context.Context, resp *http.Response
 
 		trsWR := ctx.Value(trsRetryCountKey).(*trsWrappedReq)
 		trsWR.retryCount++
-
-		//wrapperLogger.Errorf("trsCheckRetry: retryCount now %v", trsWR.retryCount)
 
 		// If the retry limit was reached we do not want to close all idle
 		// connections unnecessarily so imcrement skipCloseCount counter so
@@ -377,8 +357,6 @@ func (c *trsRoundTripper) trsCheckRetry(ctx context.Context, resp *http.Response
 			c.skipCloseMutex.Lock()
 			c.skipCloseCount++
 			c.skipCloseMutex.Unlock()
-
-			//wrapperLogger.Errorf("trsCheckRetry: skipCloseCount now %v and err is %v", c.skipCloseCount, err)
 
 			// retryablehttp will close any response bodies on retry skip + error
 
